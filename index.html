@@ -26,6 +26,7 @@
 <body class="text-white select-none">
 
     <div id="game-container">
+        
         <canvas id="gameCanvas"></canvas>
 
         <!-- واجهة العدادات -->
@@ -139,6 +140,38 @@
                 </div>
             </div>
             <button onclick="hideCredits()" class="px-10 py-3 bg-white text-purple-900 hover:bg-gray-200 text-2xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95">عودة للقائمة</button>
+        </div>
+
+        <!-- شاشة دروس الفيروسات (تظهر عند الموت في المرحلة 5 لأول مرة) -->
+        <div id="virusTutorialUI" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-8 text-center z-50 hidden backdrop-blur-md">
+            <h2 class="text-5xl font-black text-red-500 mb-6 glowing-text">تحذير أمني عالي!</h2>
+            <div class="bg-gray-900/80 p-6 rounded-3xl border-2 border-red-500 max-w-2xl text-right shadow-[0_0_30px_rgba(239,68,68,0.5)]">
+                <p class="text-2xl text-white mb-6">لقد دخلت منطقة الدائرة الإلكترونية. قواعد النجاة تغيرت. احذر من:</p>
+                
+                <div class="flex items-center gap-6 mb-6 bg-black/60 p-5 rounded-2xl">
+                    <div class="w-16 h-16 bg-green-500 rounded-full border-4 border-green-800 flex-shrink-0 flex items-center justify-center">
+                        <div class="w-2 h-2 bg-black rounded-full mx-1"></div><div class="w-2 h-2 bg-black rounded-full mx-1"></div>
+                    </div>
+                    <div>
+                        <p class="text-2xl text-green-400 font-bold">الفيروس الأخضر (الظل):</p>
+                        <p class="text-gray-300 mt-1 leading-relaxed">يراقبك وينتظر حركتك الأولى! بعد نصف ثانية من تحركك، <span class="text-white font-bold underline">سيقلد مسارك وقفزاتك بالضبط كظلك.</span> لا تتوقف أبداً أو تتراجع للوراء!</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-6 bg-black/60 p-5 rounded-2xl">
+                    <div class="w-16 h-16 bg-red-500 rounded-full border-4 border-red-800 flex-shrink-0 flex items-center justify-center">
+                        <div class="w-2 h-2 bg-black rounded-full mx-1"></div><div class="w-2 h-2 bg-black rounded-full mx-1"></div>
+                    </div>
+                    <div>
+                        <p class="text-2xl text-red-400 font-bold">الفيروس الأحمر (الصياد):</p>
+                        <p class="text-gray-300 mt-1 leading-relaxed">يتجاهل كل الجدران! يطير نحوك بخط مستقيم دائماً. يظهر بعد أوقات محددة (2ث و 5ث). <span class="text-white font-bold underline">تحرك بسرعة لتجنبه.</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="tutorialBtn" disabled class="mt-8 px-10 py-4 bg-gray-700 text-gray-400 text-2xl font-bold rounded-full shadow-lg transition duration-300">
+                فهمت (انتظر 5 ثواني...)
+            </button>
         </div>
 
         <!-- شاشة الموت -->
@@ -277,9 +310,13 @@
         }
 
         // === نظام الحفظ ===
-        let savedData = { unlockedLevel6: false, maxCoins: 0, hasOutfit: false };
-        function loadGame() { try { const data = localStorage.getItem('10sec_final_v6'); if (data) savedData = JSON.parse(data); if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {} }
-        function saveProgress() { try { localStorage.setItem('10sec_final_v6', JSON.stringify(savedData)); if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {} }
+        let savedData = { unlockedLevel6: false, maxCoins: 0, hasOutfit: false, hasSeenLevel5Tutorial: false };
+        function loadGame() {
+            try { const data = localStorage.getItem('10sec_final_mega_v2'); if (data) savedData = JSON.parse(data); if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {}
+        }
+        function saveProgress() {
+            try { localStorage.setItem('10sec_final_mega_v2', JSON.stringify(savedData)); if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {}
+        }
 
         // === واجهة المستخدم ===
         const menuUI = document.getElementById('menuUI'); const instructionsUI = document.getElementById('instructionsUI');
@@ -319,6 +356,7 @@
 
         let state = 'MENU'; let currentLevelIndex = 0; let totalCoins = 0; let timeRemaining = 10.0;
         let lastTime = 0; let globalTime = 0; let particles = []; let dustParticles = []; let animationId;
+        let currentDeathReason = "";
         
         let playerHistory = []; 
         const player = { x: 0, y: 0, width: 30, height: 30, vx: 0, vy: 0, speed: 500, jumpPower: -900, grounded: false, color: '#FF7F50', facingRight: true, hasMoved: false, moveStartTime: 0 };
@@ -330,7 +368,7 @@
             { theme: 'space', spawn: { x: 900, y: 400 }, platforms: [ { x: 850, y: 450, w: 150, h: 150, type: 'ground' }, { x: 650, y: 380, w: 50, h: 20, type: 'yellow' }, { x: 450, y: 300, w: 50, h: 20, type: 'yellow' }, { x: 250, y: 250, w: 50, h: 20, type: 'yellow' }, { x: 0, y: 200, w: 150, h: 150, type: 'ground' } ], traps: [ { type: 'laser', x: 550, y: 0, w: 15, h: 600, state: 0, timer: 0, times: [1000, 500, 1000, 300] }, { type: 'laser', x: 350, y: 0, w: 15, h: 600, state: 2, timer: 0, times: [1000, 500, 1000, 300] } ], coins: [{ x: 460, y: 260, collected: false }, { x: 260, y: 210, collected: false }], exit: { x: 40, y: 120, w: 60, h: 80 } },
             { theme: 'underwater', spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 450, w: 100, h: 150, type: 'ground' }, { x: 200, y: 400, w: 60, h: 20, type: 'yellow' }, { x: 400, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 600, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 800, y: 400, w: 60, h: 20, type: 'yellow' }, { x: 900, y: 450, w: 100, h: 150, type: 'ground' } ], traps: [ { type: 'mine', x: 310, y: 350, base_y: 350, range: 50, speed: 2, angle: 0 }, { type: 'mine', x: 510, y: 300, base_y: 300, range: 80, speed: 3, angle: 0 }, { type: 'mine', x: 710, y: 350, base_y: 350, range: 50, speed: 2, angle: 0 } ], coins: [{ x: 415, y: 310, collected: false }, { x: 615, y: 310, collected: false }], exit: { x: 920, y: 370, w: 60, h: 80 } },
             { theme: 'prison', spawn: { x: 50, y: 450 }, platforms: [ { x: 0, y: 500, w: 100, h: 100, type: 'ground' }, { x: 200, y: 450, w: 80, h: 20, type: 'yellow' }, { x: 400, y: 350, w: 200, h: 20, type: 'yellow' }, { x: 700, y: 250, w: 80, h: 20, type: 'yellow' }, { x: 400, y: 150, w: 200, h: 20, type: 'yellow' }, { x: 100, y: 100, w: 150, h: 50, type: 'ground' } ], traps: [ { type: 'saw', x: 450, y: 330, radius: 20, vx: 200, minX: 400, maxX: 600, angle: 0 }, { type: 'saw', x: 550, y: 130, radius: 20, vx: -250, minX: 400, maxX: 600, angle: 0 } ], coins: [{ x: 720, y: 210, collected: false }, { x: 500, y: 100, collected: false }], exit: { x: 140, y: 20, w: 60, h: 80 } },
-            { // 5. الدائرة (متاهة الفيروسات)
+            { // 5. الدائرة
                 theme: 'circuit', spawn: { x: 50, y: 500 },
                 platforms: [
                     { x: 0, y: 550, w: 1000, h: 50, type: 'ground' }, { x: 900, y: 480, w: 100, h: 20, type: 'yellow' }, 
@@ -338,9 +376,7 @@
                 ],
                 traps: [
                     { type: 'static_spike', x: 400, y: 520, w: 100, h: 30 }, { type: 'static_spike', x: 400, y: 370, w: 100, h: 30 }, 
-                    // الأخضر يتبعك بعد نصف ثانية من حركتك الأولى
                     { type: 'chaser_green', x: -100, y: -100, startTime: 0.5 },
-                    // الأحمر معتمد على الوقت الكلي
                     { type: 'chaser_red', x: 900, y: 50, speed: 100, startTime: 2.0 },
                     { type: 'chaser_red', x: 50, y: 50, speed: 130, startTime: 5.0 }
                 ],
@@ -352,7 +388,10 @@
 
         function spawnDustParticles() {
             for(let i=0; i<8; i++) {
-                dustParticles.push({ x: player.x + player.width/2 + (Math.random()*16 - 8), y: player.y + player.height, vx: (Math.random() - 0.5) * 80, vy: Math.random() * -60 - 20, life: 0.5, maxLife: 0.5, s: Math.random() * 3 + 2 });
+                dustParticles.push({
+                    x: player.x + player.width/2 + (Math.random()*16 - 8), y: player.y + player.height,
+                    vx: (Math.random() - 0.5) * 80, vy: Math.random() * -60 - 20, life: 0.5, maxLife: 0.5, s: Math.random() * 3 + 2
+                });
             }
         }
 
@@ -369,7 +408,8 @@
 
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Escape') {
-                if (state === 'PLAYING') { state = 'PAUSED'; pauseUI.classList.remove('hidden'); } else if (state === 'PAUSED') { resumeGame(); }
+                if (state === 'PLAYING') { state = 'PAUSED'; pauseUI.classList.remove('hidden'); } 
+                else if (state === 'PAUSED') { resumeGame(); }
             }
             if (state === 'GAMEOVER') {
                 if (e.code === 'Space' || e.code === 'Enter') { restartFromDeath(); return; }
@@ -406,22 +446,73 @@
             initAudio(); loadGame(); stopAllMusic();
             menuUI.classList.add('hidden'); instructionsUI.classList.add('hidden'); creditsUI.classList.add('hidden');
             gameOverUI.classList.add('hidden'); winUI.classList.add('hidden'); pauseUI.classList.add('hidden'); hudUI.classList.remove('hidden');
+            document.getElementById('virusTutorialUI').classList.add('hidden');
             currentLevelIndex = startIdx; loadLevel(currentLevelIndex);
-            state = 'PLAYING'; lastTime = performance.now(); globalTime = 0;
+            state = 'PLAYING'; lastTime = performance.now();
             if(animationId) cancelAnimationFrame(animationId); animationId = requestAnimationFrame(gameLoop);
         };
 
         function loadLevel(index) {
             currentLevel = JSON.parse(JSON.stringify(levels[index]));
             player.x = currentLevel.spawn.x; player.y = currentLevel.spawn.y; player.vx = 0; player.vy = 0; player.grounded = false; player.facingRight = true;
-            player.hasMoved = false; player.moveStartTime = 0; playerHistory = []; // تصفير متغيرات تتبع الحركة
-            timeRemaining = 10.0; initParticles(currentLevel.theme); updateHUD(); startGameMusic(currentLevel.theme);
+            player.hasMoved = false; player.moveStartTime = 0; playerHistory = []; 
+            timeRemaining = 10.0; globalTime = 0; // إصلاح توقيت المرحلة
+            initParticles(currentLevel.theme); updateHUD(); startGameMusic(currentLevel.theme);
         }
 
-        function gameOver(reason) { state = 'GAMEOVER'; stopAllMusic(); playSound('death'); hudUI.classList.add('hidden'); gameOverUI.classList.remove('hidden'); document.getElementById('deathReason').innerText = reason; }
+        function showTutorial() {
+            state = 'TUTORIAL';
+            stopAllMusic();
+            hudUI.classList.add('hidden');
+            document.getElementById('virusTutorialUI').classList.remove('hidden');
+            
+            let btn = document.getElementById('tutorialBtn');
+            btn.disabled = true;
+            btn.className = "mt-8 px-10 py-4 bg-gray-600 text-gray-400 text-2xl font-bold rounded-full shadow-lg cursor-not-allowed transition duration-300";
+            
+            let timeLeft = 5;
+            btn.innerText = `فهمت (انتظر ${timeLeft} ثواني...)`;
+            
+            let tutInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    btn.innerText = `فهمت (انتظر ${timeLeft} ثواني...)`;
+                } else {
+                    clearInterval(tutInterval);
+                    btn.disabled = false;
+                    btn.innerText = "متابعة للموت!";
+                    btn.className = "mt-8 px-10 py-4 bg-red-600 hover:bg-red-500 text-white text-2xl font-bold rounded-full shadow-[0_0_20px_rgba(239,68,68,0.5)] transition transform hover:scale-105 active:scale-95 cursor-pointer";
+                    btn.onclick = () => {
+                        savedData.hasSeenLevel5Tutorial = true;
+                        saveProgress();
+                        document.getElementById('virusTutorialUI').classList.add('hidden');
+                        showNormalGameOver();
+                    };
+                }
+            }, 1000);
+        }
+
+        function showNormalGameOver() {
+            state = 'GAMEOVER';
+            document.getElementById('deathReason').innerText = currentDeathReason;
+            playSound('death');
+            gameOverUI.classList.remove('hidden');
+        }
+
+        function gameOver(reason) { 
+            currentDeathReason = reason;
+            if (currentLevelIndex === 4 && !savedData.hasSeenLevel5Tutorial) {
+                showTutorial();
+            } else {
+                showNormalGameOver();
+            }
+        }
 
         window.returnToMenuFromDeath = function() { gameOverUI.classList.add('hidden'); returnToMenu(); };
-        window.restartFromDeath = function() { initAudio(); gameOverUI.classList.add('hidden'); if (isCheatModeActive || currentLevelIndex === 5) { startGame(currentLevelIndex); } else { startGame(0); } };
+        window.restartFromDeath = function() {
+            initAudio(); gameOverUI.classList.add('hidden');
+            if (isCheatModeActive || currentLevelIndex === 5) { startGame(currentLevelIndex); } else { startGame(0); }
+        };
 
         function winGame() {
             state = 'WIN'; stopAllMusic(); playSound('win'); hudUI.classList.add('hidden'); winUI.classList.remove('hidden'); document.getElementById('finalCoins').innerText = totalCoins;
@@ -454,36 +545,48 @@
             timeRemaining -= dt; globalTime += dt; updateHUD();
             if (timeRemaining <= 0) { gameOver("انتهى الوقت!"); return; }
 
-            // تفعيل "الحركة الأولى" إذا لم يتحرك مسبقاً وضغط على أي زر
             if (!player.hasMoved && (keys.left || keys.right || keys.up)) {
                 player.hasMoved = true;
                 player.moveStartTime = globalTime;
             }
 
             if (keys.left) player.vx = -player.speed; else if (keys.right) player.vx = player.speed; else player.vx = 0;
+            
             let wasGrounded = player.grounded;
+            let oldX = player.x;
+            let oldY = player.y;
 
             player.x += player.vx * dt;
             if (player.x < 0) player.x = 0; if (player.x + player.width > logicalWidth) player.x = logicalWidth - player.width;
 
+            // إصلاح اختراق الجدران الأفقية
             for (let plat of currentLevel.platforms) {
-                if (checkCollision(player, plat)) { if (player.vx > 0) player.x = plat.x - player.width; else if (player.vx < 0) player.x = plat.x + plat.w; player.vx = 0; }
+                if (checkCollision(player, plat)) { 
+                    if (player.vx > 0 && oldX + player.width <= plat.x + 15) player.x = plat.x - player.width; 
+                    else if (player.vx < 0 && oldX >= plat.x + plat.w - 15) player.x = plat.x + plat.w; 
+                    player.vx = 0; 
+                }
             }
 
             let currentGravity = gravity; if(currentLevel.theme === 'space') currentGravity *= 0.8; if(currentLevel.theme === 'underwater') currentGravity *= 0.7;
             player.vy += currentGravity * dt; if (player.vy > terminalVelocity) player.vy = terminalVelocity;
             player.y += player.vy * dt; player.grounded = false;
 
+            // إصلاح السقوط من الأرضية (Anti-Tunneling)
             for (let plat of currentLevel.platforms) {
                 if (checkCollision(player, plat)) {
-                    if (player.vy > 0) { player.y = plat.y - player.height; player.vy = 0; player.grounded = true; } else if (player.vy < 0) { player.y = plat.y + plat.h; player.vy = 0; }
+                    if (player.vy > 0 && oldY + player.height <= plat.y + 15) { 
+                        player.y = plat.y - player.height; player.vy = 0; player.grounded = true; 
+                    } else if (player.vy < 0 && oldY >= plat.y + plat.h - 15) { 
+                        player.y = plat.y + plat.h; player.vy = 0; 
+                    }
                 }
             }
+            
             if (!wasGrounded && player.grounded && player.vy === 0) { spawnDustParticles(); } 
 
             if (player.y > logicalHeight) { gameOver("سقطت في الهاوية!"); return; }
 
-            // حفظ المسار فقط إذا كان اللاعب قد بدأ بالحركة فعلاً
             if (state === 'PLAYING' && player.hasMoved) {
                 playerHistory.push({x: player.x, y: player.y, time: globalTime - player.moveStartTime});
             }
@@ -518,7 +621,6 @@
                     }
                 }
                 else if (trap.type === 'chaser_green') {
-                    // الأخضر يعتمد على وقت الحركة وليس الوقت الكلي للمرحلة
                     if (player.hasMoved && (globalTime - player.moveStartTime) >= trap.startTime) {
                         let targetTime = (globalTime - player.moveStartTime) - trap.startTime;
                         let pastPos = playerHistory[0]; 
@@ -533,7 +635,6 @@
                         if (pastPos) { trap.x = pastPos.x; trap.y = pastPos.y; }
                         if (checkCollision(player, {x: trap.x, y: trap.y, w: 30, h: 30})) { gameOver("الفيروس الأخضر!"); return; }
                     } else {
-                        // إخفاء الفيروس الأخضر قبل أن يحين وقته
                         trap.x = -100; trap.y = -100;
                     }
                 }
@@ -764,7 +865,11 @@
         function gameLoop(currentTime) {
             if (state === 'MENU') { draw(); animationId = requestAnimationFrame(gameLoop); return; }
             if (state !== 'PLAYING') return; 
-            const dt = (currentTime - lastTime) / 1000; lastTime = currentTime;
+            
+            let dt = (currentTime - lastTime) / 1000; 
+            if (dt > 0.1) dt = 0.1; // حل جذري لمنع اختراق الجدران عند انخفاض الأداء (Anti-Tunneling)
+            lastTime = currentTime;
+            
             update(dt); draw(); animationId = requestAnimationFrame(gameLoop);
         }
 
