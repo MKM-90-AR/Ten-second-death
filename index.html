@@ -58,6 +58,7 @@
                     <div class="text-4xl font-extrabold text-red-500" id="timeDisplay">10.0</div>
                     <div class="text-sm text-gray-300 font-bold text-center">الوقت المتبقي</div>
                 </div>
+                <!-- أرواح قسم التدريب -->
                 <div id="livesContainer" class="bg-black/80 backdrop-blur-md p-2 rounded-xl border border-red-500/50 hidden items-center justify-center gap-1 shadow-lg">
                     <span id="heart1" class="heart"></span>
                     <span id="heart2" class="heart"></span>
@@ -182,12 +183,28 @@
         <!-- شاشة شرح اللعبة التفاعلية -->
         <div id="instructionsUI" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-start p-6 text-center z-30 hidden backdrop-blur-md overflow-y-auto pt-10">
             <h2 class="text-5xl text-blue-400 font-black mb-6 glowing-text">شرح اللعبة والمراحل</h2>
-            <div class="bg-black/70 p-6 rounded-3xl max-w-3xl w-full border border-blue-500/50 mb-6 shadow-2xl text-right text-white text-lg">
+            <div class="bg-black/70 p-6 rounded-3xl max-w-4xl w-full border border-blue-500/50 mb-6 shadow-2xl text-right text-white text-lg">
+                
                 <div class="mb-4 border-b border-gray-700 pb-4">
-                    <p class="leading-relaxed text-gray-300">القصة: لقد تم احتجازك في بُعد زمني ينهار. الفضاء والزمن يتدمران بعد <strong class="text-red-400">10 ثوانٍ</strong>. النجاة تعني الوصول إلى "بوابة الزمكان".</p>
-                    <p class="text-gray-300 mt-2">التحكم: <strong class="text-white">الأسهم</strong> أو <strong class="text-white">W, A, S, D</strong> للحركة، <strong class="text-white">Space</strong> للقفز، و <strong class="text-white">Esc</strong> للإيقاف المؤقت.</p>
+                    <h3 class="text-2xl text-blue-300 font-bold mb-2">القصة:</h3>
+                    <p class="leading-relaxed text-gray-300">لقد تم احتجازك في بُعد زمني ينهار. الفضاء والزمن يتدمران بعد <strong class="text-red-400">10 ثوانٍ</strong>. النجاة تعني الوصول إلى "بوابة الزمكان" قبل انتهاء الوقت.</p>
                 </div>
-                <div id="dynamicLevelLore"></div>
+
+                <div class="mb-4 border-b border-gray-700 pb-4">
+                    <h3 class="text-2xl text-yellow-400 font-bold mb-2">قواعد النجاة (هام جداً):</h3>
+                    <ul class="list-disc list-inside text-gray-300 space-y-2 text-base">
+                        <li><strong class="text-white">التحكم:</strong> استخدم الأسهم أو W, A, S, D للحركة، و Space للقفز، و Esc للإيقاف المؤقت.</li>
+                        <li><strong class="text-red-400">المراحل الأساسية (1 إلى 5):</strong> خطأ واحد يعني الموت! لا يوجد حفظ للتقدم داخل اللعبة، إذا مت ستعود للمرحلة الأولى.</li>
+                        <li><strong class="text-purple-400">المرحلة السادسة (المستحيلة):</strong> لأنها الأصعب، إذا مت فيها ستعيد من بداية المرحلة السادسة فقط ولن تعود للبداية كرحمة لك.</li>
+                        <li><strong class="text-green-400">قسم التدريب:</strong> لديك <strong class="text-white">3 أرواح</strong>. إذا لمست فخاً، تفقد روحاً وتعود <strong class="text-white">لبداية نفس المرحلة التدريبية</strong> فوراً لتتعلم من خطئك. إذا فقدت الأرواح الثلاثة، ستعود لبداية قسم التدريب بالكامل.</li>
+                    </ul>
+                </div>
+                
+                <!-- سجل المراحل الديناميكي -->
+                <div id="dynamicLevelLore">
+                    <!-- يملأ عن طريق جافاسكريبت -->
+                </div>
+                
             </div>
             <button onclick="hideInstructions()" class="px-10 py-3 bg-white text-blue-900 hover:bg-gray-200 text-2xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95 mb-6">عودة للقائمة</button>
         </div>
@@ -215,26 +232,29 @@
         <div id="virusTutorialUI" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-8 text-center z-50 hidden backdrop-blur-md">
             <h2 class="text-5xl font-black text-red-500 mb-6 glowing-text">تحذير أمني عالي!</h2>
             <div class="bg-gray-900/80 p-6 rounded-3xl border-2 border-red-500 max-w-2xl text-right shadow-[0_0_30px_rgba(239,68,68,0.5)]">
-                <p class="text-2xl text-white mb-6">لقد دخلت منطقة الدائرة الإلكترونية. احذر من:</p>
+                <p class="text-2xl text-white mb-6">لقد دخلت منطقة الدائرة الإلكترونية. قواعد النجاة تغيرت. احذر من:</p>
+                
                 <div class="flex items-center gap-6 mb-6 bg-black/60 p-5 rounded-2xl">
                     <div class="w-16 h-16 bg-green-500 rounded-full border-4 border-green-800 flex-shrink-0 flex items-center justify-center">
                         <div class="w-2 h-2 bg-black rounded-full mx-1"></div><div class="w-2 h-2 bg-black rounded-full mx-1"></div>
                     </div>
                     <div>
                         <p class="text-2xl text-green-400 font-bold">الفيروس الأخضر (الظل):</p>
-                        <p class="text-gray-300 mt-1 leading-relaxed">بعد نصف ثانية من حركتك، <span class="text-white font-bold underline">سيقلد مسارك وقفزاتك كظلك.</span> لا تتوقف أبداً!</p>
+                        <p class="text-gray-300 mt-1 leading-relaxed">يراقبك وينتظر حركتك الأولى! بعد نصف ثانية من تحركك، <span class="text-white font-bold underline">سيقلد مسارك وقفزاتك بالضبط كظلك.</span> لا تتوقف أبداً أو تتراجع للوراء!</p>
                     </div>
                 </div>
+
                 <div class="flex items-center gap-6 bg-black/60 p-5 rounded-2xl">
                     <div class="w-16 h-16 bg-red-500 rounded-full border-4 border-red-800 flex-shrink-0 flex items-center justify-center">
                         <div class="w-2 h-2 bg-black rounded-full mx-1"></div><div class="w-2 h-2 bg-black rounded-full mx-1"></div>
                     </div>
                     <div>
                         <p class="text-2xl text-red-400 font-bold">الفيروس الأحمر (الصياد):</p>
-                        <p class="text-gray-300 mt-1 leading-relaxed">يتجاهل الجدران! يطير نحوك بخط مستقيم.</p>
+                        <p class="text-gray-300 mt-1 leading-relaxed">يتجاهل كل الجدران! يطير نحوك بخط مستقيم دائماً. يظهر بعد أوقات محددة (2ث و 5ث). <span class="text-white font-bold underline">تحرك بسرعة لتجنبه.</span></p>
                     </div>
                 </div>
             </div>
+            
             <button id="tutorialBtn" disabled class="mt-8 px-10 py-4 bg-gray-700 text-gray-400 text-2xl font-bold rounded-full shadow-lg transition duration-300">
                 فهمت (انتظر 5 ثواني...)
             </button>
@@ -260,12 +280,17 @@
             <p class="text-2xl text-green-300 mb-6" id="winDesc">مهارة استثنائية!</p>
             
             <div id="rewardSection" class="bg-black/60 p-6 rounded-2xl border-2 border-yellow-500/50 mb-8 max-w-md shadow-2xl">
-                <div id="noReward" class="text-xl text-gray-200">جمعت <span id="finalCoins" class="text-yellow-400 font-bold text-3xl"></span> عملات من أصل 9.</div>
+                <div id="noReward" class="text-xl text-gray-200">
+                    جمعت <span id="finalCoins" class="text-yellow-400 font-bold text-3xl"></span> عملات من أصل 9.
+                </div>
                 <div id="hasReward" class="hidden flex-col items-center">
                     <p class="text-2xl text-yellow-400 font-extrabold mb-4 glowing-text">إنجاز أسطوري!</p>
                     <div class="w-24 h-24 bg-green-500 rounded-xl relative flex justify-center border-4 border-yellow-400 shadow-[0_0_30px_rgba(34,197,94,0.6)] mb-4">
                         <div class="text-5xl absolute -top-8 drop-shadow-lg">👑</div>
-                        <div class="absolute bottom-3 flex gap-2"><div class="w-3 h-3 bg-white rounded-full"></div><div class="w-3 h-3 bg-white rounded-full"></div></div>
+                        <div class="absolute bottom-3 flex gap-2">
+                            <div class="w-3 h-3 bg-white rounded-full"></div>
+                            <div class="w-3 h-3 bg-white rounded-full"></div>
+                        </div>
                     </div>
                     <p class="text-xl text-white font-bold">تم تفعيل الزي الأخضر الملكي الدائم!</p>
                 </div>
@@ -286,25 +311,30 @@
     <script>
         // === نظام فحص الأجهزة (منع الهواتف والتابلت) ===
         function checkDevice() {
-            // نعتمد على الـ User Agent بدلاً من فحص اللمس العام (لأن بعض اللابتوبات تمتلك شاشات لمس)
             const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1; // للآيبادات الحديثة
+            const isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1; 
             
             const blockScreen = document.getElementById('deviceBlockUI');
             const gameContainer = document.getElementById('game-container');
             
             if (isMobileUA || isIPadOS) {
-                blockScreen.classList.remove('hidden');
-                blockScreen.classList.add('flex');
-                gameContainer.style.display = 'none';
+                blockScreen.classList.remove('hidden'); blockScreen.classList.add('flex'); gameContainer.style.display = 'none';
             } else {
-                blockScreen.classList.add('hidden');
-                blockScreen.classList.remove('flex');
-                gameContainer.style.display = 'block';
+                blockScreen.classList.add('hidden'); blockScreen.classList.remove('flex'); gameContainer.style.display = 'block';
             }
         }
         window.addEventListener('resize', checkDevice);
         window.addEventListener('load', checkDevice);
+
+        // === إيقاف الصوت عند الخروج من التبويب (Page Visibility API) ===
+        document.addEventListener("visibilitychange", () => {
+            if (!audioCtx) return;
+            if (document.hidden) {
+                if (audioCtx.state === 'running') audioCtx.suspend();
+            } else {
+                if (audioCtx.state === 'suspended' && (isMusicPlaying || state === 'PLAYING')) audioCtx.resume();
+            }
+        });
 
         // === نظام الصوت والموسيقى المتقدم ===
         let audioCtx; let menuAudioInterval; let gameAudioInterval; let isMusicPlaying = false;
@@ -317,7 +347,6 @@
             if (state === 'MENU') startMenuMusic();
         }
 
-        // تشغيل الموسيقى تلقائياً إذا أمكن
         window.addEventListener('load', () => { loadSettings(); initAudio(); });
         document.body.addEventListener('click', () => { if (!audioCtx || audioCtx.state === 'suspended') initAudio(); }, { once: true });
         document.body.addEventListener('keydown', () => { if (!audioCtx || audioCtx.state === 'suspended') initAudio(); }, { once: true });
@@ -368,7 +397,7 @@
         }
 
         function playSound(type) {
-            if (!audioCtx) return;
+            if (!audioCtx || audioCtx.state === 'suspended') return;
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination); const now = audioCtx.currentTime;
             
@@ -385,10 +414,11 @@
             }
         }
 
-        // === نظام الحفظ ===
+        // === نظام الحفظ والبيانات الشاملة ===
         let savedData = { 
             unlockedLevel6: false, maxCoins: 0, hasOutfit: false, hasSeenLevel5Tutorial: false,
-            maxMainLvl: 0, maxTrainLvl: 0, volMusic: 1.0, volMove: 1.0, volTrap: 1.0
+            maxMainLvl: 0, maxTrainLvl: 0,
+            volMusic: 1.0, volMove: 1.0, volTrap: 1.0
         };
 
         const LORE_MAIN = [
@@ -396,7 +426,7 @@
             { name: "فراغ الفضاء", desc: "اقفز بحذر بين المنصات وتفادى أشعة الليزر التي تنشط بشكل دوري." },
             { name: "الخندق المائي", desc: "تجاوز الألغام البحرية الشائكة التي تطفو وتدور ببطء." },
             { name: "السجن الحديدي", desc: "تسلق للهروب من هذا السجن وتجنب المناشير الدوارة الحادة." },
-            { name: "الدائرة الإلكترونية", desc: "متاهة معقدة تتبعك فيها فيروسات ظلية." },
+            { name: "الدائرة الإلكترونية", desc: "متاهة معقدة تتبعك فيها فيروسات ظلية (الأخضر يتبع مسارك، الأحمر يخترق الجدران)." },
             { name: "المرج المستحيل", desc: "كل شيء يبدو هادئاً حتى تقترب! فخاخ فجائية تنتظر خطوتك لتنقض عليك." }
         ];
 
@@ -408,11 +438,14 @@
         ];
 
         function loadGame() { 
-            try { const data = localStorage.getItem('10sec_final_mega_v10'); if (data) savedData = { ...savedData, ...JSON.parse(data) }; } catch(e) {} 
+            try { 
+                const data = localStorage.getItem('10sec_final_mega_v12'); 
+                if (data) savedData = { ...savedData, ...JSON.parse(data) }; 
+            } catch(e) {} 
         }
 
         function saveProgress() { 
-            try { localStorage.setItem('10sec_final_mega_v10', JSON.stringify(savedData)); updateMenuButtons(); } catch(e) {} 
+            try { localStorage.setItem('10sec_final_mega_v12', JSON.stringify(savedData)); updateMenuButtons(); } catch(e) {} 
         }
 
         function updateMenuButtons() {
@@ -429,6 +462,7 @@
         const pauseUI = document.getElementById('pauseUI'); const settingsUI = document.getElementById('settingsUI');
 
         function loadSettings() {
+            loadGame();
             audioVols.Music = savedData.volMusic !== undefined ? savedData.volMusic : 1.0;
             audioVols.Move = savedData.volMove !== undefined ? savedData.volMove : 1.0;
             audioVols.Trap = savedData.volTrap !== undefined ? savedData.volTrap : 1.0;
@@ -559,7 +593,7 @@
         const player = { 
             x: 0, y: 0, width: 30, height: 30, vx: 0, vy: 0, speed: 500, jumpPower: -900, 
             grounded: false, color: '#FF7F50', facingRight: true, hasMoved: false, moveStartTime: 0,
-            lives: 3, invulnTimer: 0
+            lives: 3
         };
         const gravity = 2400; const terminalVelocity = 1400; const keys = { left: false, right: false, up: false };
 
@@ -581,11 +615,12 @@
             { theme: 'training_factory', width: 1000, time: 10.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 450, w: 1000, h: 150, type: 'ground' } ], traps: [ { type: 'piston', x: 200, y: 0, w: 60, h: 450, timer: 0, speed: 2 }, { type: 'piston', x: 400, y: 0, w: 60, h: 450, timer: 1, speed: 2 }, { type: 'piston', x: 600, y: 0, w: 60, h: 450, timer: 2, speed: 2 }, { type: 'piston', x: 800, y: 0, w: 60, h: 450, timer: 3, speed: 2 } ], coins: [], exit: { x: 920, y: 370, w: 60, h: 80 } }
         ];
 
-        let currentLevel = null;
-
         function spawnDustParticles() {
             for(let i=0; i<8; i++) {
-                dustParticles.push({ x: player.x + player.width/2 + (Math.random()*16 - 8), y: player.y + player.height, vx: (Math.random() - 0.5) * 80, vy: Math.random() * -60 - 20, life: 0.5, maxLife: 0.5, s: Math.random() * 3 + 2 });
+                dustParticles.push({
+                    x: player.x + player.width/2 + (Math.random()*16 - 8), y: player.y + player.height,
+                    vx: (Math.random() - 0.5) * 80, vy: Math.random() * -60 - 20, life: 0.5, maxLife: 0.5, s: Math.random() * 3 + 2
+                });
             }
         }
 
@@ -621,7 +656,9 @@
             if (e.code === 'Space' || e.code === 'ArrowUp' || k === 'w') keys.up = false;
         });
 
-        function jump() { if (player.grounded && state === 'PLAYING') { player.vy = player.jumpPower; player.grounded = false; playSound('jump'); spawnDustParticles(); } }
+        function jump() {
+            if (player.grounded && state === 'PLAYING') { player.vy = player.jumpPower; player.grounded = false; playSound('jump'); spawnDustParticles(); }
+        }
 
         window.resumeGame = function() { state = 'PLAYING'; pauseUI.classList.add('hidden'); lastTime = performance.now(); requestAnimationFrame(gameLoop); }
         window.quitToMenu = function() { state = 'MENU'; pauseUI.classList.add('hidden'); hudUI.classList.add('hidden'); menuUI.classList.remove('hidden'); stopAllMusic(); startMenuMusic(); updateMenuButtons(); initMenuParticles(); draw(); }
@@ -661,16 +698,16 @@
             let levelData = (currentMode === 'MAIN') ? mainLevels[index] : trainingLevels[index];
             currentLevel = JSON.parse(JSON.stringify(levelData));
             player.x = currentLevel.spawn.x; player.y = currentLevel.spawn.y; player.vx = 0; player.vy = 0; player.grounded = false; player.facingRight = true;
-            player.hasMoved = false; player.moveStartTime = 0; playerHistory = []; player.invulnTimer = 0;
+            player.hasMoved = false; player.moveStartTime = 0; playerHistory = [];
             timeRemaining = currentLevel.time; globalTime = 0; camera.x = 0; camera.y = 0;
             initParticles(currentLevel.theme, currentLevel.width); updateHUD(); startGameMusic(currentLevel.theme);
         }
 
         function takeDamage(reason) {
-            if (player.invulnTimer > 0) return;
             if (currentMode === 'TRAINING') {
                 player.lives--; updateHeartsUI();
-                if (player.lives <= 0) { gameOver(reason); } else { player.invulnTimer = 1.5; playSound('hurt'); }
+                if (player.lives <= 0) { gameOver(reason); } 
+                else { playSound('hurt'); loadLevel(currentLevelIndex); }
             } else { gameOver(reason); }
         }
 
@@ -692,10 +729,17 @@
         function showNormalGameOver() { state = 'GAMEOVER'; document.getElementById('deathReason').innerText = currentDeathReason; playSound('death'); gameOverUI.classList.remove('hidden'); }
 
         function gameOver(reason) { 
+            hudUI.classList.add('hidden');
             if (currentMode === 'TRAINING') {
-                if (player.lives > 0) { currentDeathReason = reason + ` (تبقت لك ${player.lives} أرواح)`; document.getElementById('retryBtn').innerText = "إعادة المحاولة (Space / Enter)"; } 
-                else { currentDeathReason = reason + " (نفدت أرواحك! العودة للبداية)"; document.getElementById('retryBtn').innerText = "العودة للبداية (Space / Enter)"; }
-            } else { currentDeathReason = reason; document.getElementById('retryBtn').innerText = "إعادة البدء (Space / Enter)"; }
+                if (player.lives > 0) { 
+                    currentDeathReason = reason; document.getElementById('retryBtn').innerText = "إعادة المحاولة (Space / Enter)"; 
+                } 
+                else { 
+                    currentDeathReason = reason + " (نفدت أرواحك! العودة للبداية)"; document.getElementById('retryBtn').innerText = "العودة للبداية (Space / Enter)"; 
+                }
+            } else { 
+                currentDeathReason = reason; document.getElementById('retryBtn').innerText = "إعادة البدء (Space / Enter)"; 
+            }
             
             document.getElementById('deathReason').innerText = currentDeathReason;
             if (currentMode === 'MAIN' && currentLevelIndex === 4 && !savedData.hasSeenLevel5Tutorial) { showTutorial(); } 
@@ -746,7 +790,11 @@
             isCheatModeActive = false; 
         }
 
-        window.returnToMenu = function() { initAudio(); loadGame(); winUI.classList.add('hidden'); menuUI.classList.remove('hidden'); state = 'MENU'; isCheatModeActive = false; stopAllMusic(); startMenuMusic(); updateMenuButtons(); initMenuParticles(); draw(); };
+        window.returnToMenu = function() { 
+            initAudio(); loadGame(); 
+            winUI.classList.add('hidden'); hudUI.classList.add('hidden'); menuUI.classList.remove('hidden'); 
+            state = 'MENU'; isCheatModeActive = false; stopAllMusic(); startMenuMusic(); updateMenuButtons(); initMenuParticles(); draw(); 
+        };
 
         function updateHUD() {
             let t = Math.max(0, timeRemaining).toFixed(1); document.getElementById('timeDisplay').innerText = t; const tContainer = document.getElementById('timeContainer');
@@ -767,7 +815,6 @@
 
         function update(dt) {
             timeRemaining -= dt; globalTime += dt; updateHUD();
-            if (player.invulnTimer > 0) player.invulnTimer -= dt;
             if (timeRemaining <= 0) { takeDamage("انتهى الوقت!"); return; }
 
             if (!player.hasMoved && (keys.left || keys.right || keys.up)) { player.hasMoved = true; player.moveStartTime = globalTime; }
@@ -898,6 +945,7 @@
             }
             if (checkCollision(player, currentLevel.exit)) {
                 let maxLvl = (currentMode === 'TRAINING') ? trainingLevels.length : mainLevels.length;
+                
                 if (currentMode === 'MAIN' && currentLevelIndex + 1 > savedData.maxMainLvl && !isCheatModeActive) { savedData.maxMainLvl = currentLevelIndex + 1; saveProgress(); }
                 if (currentMode === 'TRAINING' && currentLevelIndex + 1 > savedData.maxTrainLvl && !isCheatModeActive) { savedData.maxTrainLvl = currentLevelIndex + 1; saveProgress(); }
 
@@ -1097,21 +1145,19 @@
             ctx.fillStyle = (currentLevel.theme === 'circuit') ? '#10b981' : '#fbbf24'; ctx.beginPath(); ctx.roundRect(exit.x, exit.y, exit.w, exit.h, [20, 20, 0, 0]); ctx.fill();
             ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(exit.x + 10, exit.y + 10, exit.w - 20, exit.h - 10, [10, 10, 0, 0]); ctx.fill();
 
-            if (player.invulnTimer <= 0 || Math.floor(globalTime * 15) % 2 === 0) {
-                ctx.fillStyle = savedData.hasOutfit ? '#22c55e' : player.color;
-                if(savedData.hasOutfit) { ctx.shadowBlur = 15; ctx.shadowColor = '#4ade80'; }
-                ctx.beginPath(); ctx.roundRect(player.x, player.y, player.width, player.height, 8); ctx.fill(); ctx.shadowBlur = 0;
-                
-                let eye1X = player.facingRight ? 16 : 4; let eye2X = player.facingRight ? 24 : 12;
-                let pupil1X = player.facingRight ? 18 : 4; let pupil2X = player.facingRight ? 26 : 12;
+            ctx.fillStyle = savedData.hasOutfit ? '#22c55e' : player.color;
+            if(savedData.hasOutfit) { ctx.shadowBlur = 15; ctx.shadowColor = '#4ade80'; }
+            ctx.beginPath(); ctx.roundRect(player.x, player.y, player.width, player.height, 8); ctx.fill(); ctx.shadowBlur = 0;
+            
+            let eye1X = player.facingRight ? 16 : 4; let eye2X = player.facingRight ? 24 : 12;
+            let pupil1X = player.facingRight ? 18 : 4; let pupil2X = player.facingRight ? 26 : 12;
 
-                ctx.fillStyle = 'white'; ctx.fillRect(player.x + eye1X, player.y + 6, 6, 6); ctx.fillRect(player.x + eye2X, player.y + 6, 6, 6);
-                ctx.fillStyle = 'black'; ctx.fillRect(player.x + pupil1X, player.y + 8, 3, 3); ctx.fillRect(player.x + pupil2X, player.y + 8, 3, 3);
+            ctx.fillStyle = 'white'; ctx.fillRect(player.x + eye1X, player.y + 6, 6, 6); ctx.fillRect(player.x + eye2X, player.y + 6, 6, 6);
+            ctx.fillStyle = 'black'; ctx.fillRect(player.x + pupil1X, player.y + 8, 3, 3); ctx.fillRect(player.x + pupil2X, player.y + 8, 3, 3);
 
-                if (savedData.hasOutfit) {
-                    ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.moveTo(player.x-2, player.y + 5); ctx.lineTo(player.x + 4, player.y - 12);
-                    ctx.lineTo(player.x + player.width/2, player.y - 2); ctx.lineTo(player.x + player.width - 4, player.y - 12); ctx.lineTo(player.x + player.width+2, player.y + 5); ctx.fill();
-                }
+            if (savedData.hasOutfit) {
+                ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.moveTo(player.x-2, player.y + 5); ctx.lineTo(player.x + 4, player.y - 12);
+                ctx.lineTo(player.x + player.width/2, player.y - 2); ctx.lineTo(player.x + player.width - 4, player.y - 12); ctx.lineTo(player.x + player.width+2, player.y + 5); ctx.fill();
             }
             
             ctx.restore(); ctx.restore(); 
