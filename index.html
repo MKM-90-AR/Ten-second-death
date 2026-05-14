@@ -21,43 +21,57 @@
         .animate-float { animation: float 4s ease-in-out infinite; }
         @keyframes pulse-glow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
         .animate-pulse-glow { animation: pulse-glow 2s infinite; }
+        .heart { display: inline-block; width: 24px; height: 24px; background-color: #ef4444; clip-path: polygon(50% 100%, 0 50%, 0 15%, 50% 0, 100% 15%, 100% 50%); transform: rotate(180deg); margin: 0 2px; }
+        .heart-lost { background-color: #334155; }
     </style>
 </head>
 <body class="text-white select-none">
 
     <div id="game-container">
-        
         <canvas id="gameCanvas"></canvas>
 
         <!-- واجهة العدادات -->
         <div id="hudUI" class="absolute top-0 left-0 w-full p-4 flex justify-between items-start pointer-events-none hidden z-10">
-            <div class="bg-black/80 backdrop-blur-md p-3 rounded-xl border border-white/20 shadow-lg transition-colors duration-300" id="timeContainer">
-                <div class="text-4xl font-extrabold text-red-500" id="timeDisplay">10.0</div>
-                <div class="text-sm text-gray-300 font-bold text-center">الوقت المتبقي</div>
+            <div class="flex flex-col gap-2">
+                <div class="bg-black/80 backdrop-blur-md p-3 rounded-xl border border-white/20 shadow-lg transition-colors duration-300" id="timeContainer">
+                    <div class="text-4xl font-extrabold text-red-500" id="timeDisplay">10.0</div>
+                    <div class="text-sm text-gray-300 font-bold text-center">الوقت المتبقي</div>
+                </div>
+                <!-- أرواح قسم التدريب -->
+                <div id="livesContainer" class="bg-black/80 backdrop-blur-md p-2 rounded-xl border border-red-500/50 hidden items-center justify-center gap-1 shadow-lg">
+                    <span id="heart1" class="heart"></span>
+                    <span id="heart2" class="heart"></span>
+                    <span id="heart3" class="heart"></span>
+                </div>
             </div>
+            
             <div class="flex flex-col items-end gap-2">
                 <div class="bg-black/80 backdrop-blur-md px-4 py-2 rounded-xl border border-yellow-500/50 shadow-lg text-xl font-bold text-yellow-400">
                     العملات: <span id="coinDisplay">0</span>/9
                 </div>
                 <div class="bg-black/80 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 shadow-lg text-lg font-bold text-white">
-                    المرحلة: <span id="levelDisplay">1</span>/6
+                    <span id="modeDisplay">المرحلة: </span><span id="levelDisplay">1</span>/<span id="maxLevelDisplay">6</span>
                 </div>
             </div>
         </div>
 
         <!-- القائمة الرئيسية -->
         <div id="menuUI" class="absolute inset-0 bg-transparent flex flex-col items-center justify-center p-6 text-center z-20 overflow-y-auto">
-            <h1 class="text-6xl md:text-8xl font-black text-white mb-12 glowing-text tracking-wider animate-float" dir="ltr">
+            <h1 class="text-6xl md:text-8xl font-black text-white mb-8 glowing-text tracking-wider animate-float" dir="ltr">
                 <span class="text-red-600">Ten-second</span> death
             </h1>
             
-            <div class="flex flex-col gap-5 items-center z-10">
-                <button onclick="startGame(0)" class="menu-btn px-8 py-4 bg-gradient-to-r from-red-700 to-orange-600 hover:from-red-600 hover:to-orange-500 text-white text-3xl font-bold rounded-2xl shadow-[0_0_25px_rgba(239,68,68,0.6)] transition transform hover:scale-110 active:scale-95 border-2 border-red-400/50 animate-pulse-glow">
-                    البدء
+            <div class="flex flex-col gap-4 items-center z-10">
+                <button onclick="startGame('MAIN', 0)" class="menu-btn px-8 py-4 bg-gradient-to-r from-red-700 to-orange-600 hover:from-red-600 hover:to-orange-500 text-white text-3xl font-bold rounded-2xl shadow-[0_0_25px_rgba(239,68,68,0.6)] transition transform hover:scale-110 active:scale-95 border-2 border-red-400/50 animate-pulse-glow">
+                    البدء (اللعبة الأساسية)
+                </button>
+
+                <button onclick="startGame('TRAINING', 0)" class="menu-btn px-8 py-3 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-600 hover:to-emerald-500 text-white text-xl font-bold rounded-2xl shadow-[0_0_15px_rgba(34,197,94,0.5)] transition transform hover:scale-105 active:scale-95 border-2 border-green-500">
+                    قسم التدريب (3 أرواح)
                 </button>
                 
-                <button id="btnLevel6" onclick="startGame(5)" class="menu-btn hidden px-8 py-3 bg-gradient-to-r from-purple-800 to-fuchsia-900 hover:from-purple-700 hover:to-fuchsia-800 text-white text-xl font-bold rounded-2xl shadow-[0_0_15px_rgba(168,85,247,0.5)] transition transform hover:scale-105 active:scale-95 border-2 border-purple-500 danger-text">
-                    المرحلة المستحيلة
+                <button id="btnLevel6" onclick="startGame('MAIN', 5)" class="menu-btn hidden px-8 py-3 bg-gradient-to-r from-purple-800 to-fuchsia-900 hover:from-purple-700 hover:to-fuchsia-800 text-white text-xl font-bold rounded-2xl shadow-[0_0_15px_rgba(168,85,247,0.5)] transition transform hover:scale-105 active:scale-95 border-2 border-purple-500 danger-text">
+                    المرحلة المستحيلة (6)
                 </button>
 
                 <button onclick="showInstructions()" class="menu-btn px-8 py-3 bg-black/60 hover:bg-blue-900/60 text-blue-300 hover:text-white text-xl font-bold rounded-2xl shadow-lg transition transform hover:scale-105 active:scale-95 border border-blue-500/30 backdrop-blur-md">
@@ -68,6 +82,7 @@
                     فريق العمل
                 </button>
             </div>
+            <p class="absolute bottom-4 text-gray-400 text-sm opacity-70 animate-pulse">اضغط في أي مكان لتفعيل الموسيقى</p>
         </div>
 
         <!-- قائمة الإيقاف المؤقت -->
@@ -89,16 +104,13 @@
             <div class="bg-black/70 p-6 rounded-3xl max-w-3xl w-full border border-blue-500/50 mb-6 shadow-2xl text-right text-white text-lg">
                 <div class="mb-4 border-b border-gray-700 pb-4">
                     <h3 class="text-2xl text-purple-400 font-bold mb-2">القصة والمهمة:</h3>
-                    <p class="leading-relaxed text-gray-300">لقد تم احتجازك في بُعد زمني ينهار باستمرار. في كل عالم تدخله، الفضاء والزمن يتدمران بعد <strong class="text-red-400">10 ثوانٍ</strong> بالضبط. مهمتك الوحيدة هي النجاة بالوصول إلى "بوابة الزمكان" قبل انتهاء الوقت، مع تجنب الفخاخ المبرمجة لتدميرك.</p>
+                    <p class="leading-relaxed text-gray-300">لقد تم احتجازك في بُعد زمني ينهار. الفضاء والزمن يتدمران بعد <strong class="text-red-400">10 ثوانٍ</strong>. النجاة تعني الوصول إلى "بوابة الزمكان".</p>
                 </div>
                 <div class="mb-4 border-b border-gray-700 pb-4">
-                    <h3 class="text-2xl text-yellow-400 font-bold mb-2">طريقة التحكم والملاحظات:</h3>
-                    <p class="text-gray-300 mb-2">استخدم <strong class="text-white">الأسهم</strong> أو <strong class="text-white">W, A, S, D</strong> للحركة، و <strong class="text-white">Space</strong> للقفز. (زر <strong class="text-white">Esc</strong> لإيقاف اللعبة).</p>
-                    <p class="text-red-300">تنبيه: إذا مت في المراحل (1 إلى 5)، سيتم إعادتك للمرحلة الأولى. النجاة تتطلب مهارة خالية من الأخطاء.</p>
-                </div>
-                <div class="mb-4">
-                    <h3 class="text-2xl text-red-500 font-bold mb-2">المرحلة السادسة (المرج الخادع):</h3>
-                    <p class="text-gray-300 leading-relaxed">عالم يبدو هادئاً وجميلاً، لكنه "المرحلة المستحيلة". الفخاخ هنا لا تعمل إلا إذا اقتربت منها. الموت فيها يعيدك لبدايتها فقط كرحمة لك.</p>
+                    <h3 class="text-2xl text-yellow-400 font-bold mb-2">الأنظمة والتحكم:</h3>
+                    <p class="text-gray-300 mb-2">التحكم: <strong class="text-white">الأسهم</strong> أو <strong class="text-white">W, A, S, D</strong> للحركة، و <strong class="text-white">Space</strong> للقفز.</p>
+                    <p class="text-red-300 mb-2"><strong class="text-white">اللعبة الأساسية:</strong> خطأ واحد يعني الموت والعودة للمرحلة الأولى.</p>
+                    <p class="text-green-300"><strong class="text-white">قسم التدريب:</strong> لديك 3 أرواح. إذا مت، ستعيد المحاولة من نفس المرحلة. ولكن إذا فقدت جميع أرواحك، ستعود إلى بداية قسم التدريب!</p>
                 </div>
                 <div class="mt-6 pt-4 border-t-2 border-dashed border-gray-800 bg-gray-900/50 p-4 rounded-xl">
                     <h4 class="text-gray-500 font-bold mb-2 text-sm">محطة الإدارة الزمنية (للمطورين فقط)</h4>
@@ -142,33 +154,30 @@
             <button onclick="hideCredits()" class="px-10 py-3 bg-white text-purple-900 hover:bg-gray-200 text-2xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95">عودة للقائمة</button>
         </div>
 
-        <!-- شاشة دروس الفيروسات (تظهر عند الموت في المرحلة 5 لأول مرة) -->
+        <!-- شاشة دروس الفيروسات -->
         <div id="virusTutorialUI" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-8 text-center z-50 hidden backdrop-blur-md">
             <h2 class="text-5xl font-black text-red-500 mb-6 glowing-text">تحذير أمني عالي!</h2>
             <div class="bg-gray-900/80 p-6 rounded-3xl border-2 border-red-500 max-w-2xl text-right shadow-[0_0_30px_rgba(239,68,68,0.5)]">
-                <p class="text-2xl text-white mb-6">لقد دخلت منطقة الدائرة الإلكترونية. قواعد النجاة تغيرت. احذر من:</p>
-                
+                <p class="text-2xl text-white mb-6">لقد دخلت منطقة الدائرة الإلكترونية. احذر من:</p>
                 <div class="flex items-center gap-6 mb-6 bg-black/60 p-5 rounded-2xl">
                     <div class="w-16 h-16 bg-green-500 rounded-full border-4 border-green-800 flex-shrink-0 flex items-center justify-center">
                         <div class="w-2 h-2 bg-black rounded-full mx-1"></div><div class="w-2 h-2 bg-black rounded-full mx-1"></div>
                     </div>
                     <div>
                         <p class="text-2xl text-green-400 font-bold">الفيروس الأخضر (الظل):</p>
-                        <p class="text-gray-300 mt-1 leading-relaxed">يراقبك وينتظر حركتك الأولى! بعد نصف ثانية من تحركك، <span class="text-white font-bold underline">سيقلد مسارك وقفزاتك بالضبط كظلك.</span> لا تتوقف أبداً أو تتراجع للوراء!</p>
+                        <p class="text-gray-300 mt-1 leading-relaxed">بعد نصف ثانية من حركتك، <span class="text-white font-bold underline">سيقلد مسارك وقفزاتك كظلك.</span> لا تتوقف أبداً!</p>
                     </div>
                 </div>
-
                 <div class="flex items-center gap-6 bg-black/60 p-5 rounded-2xl">
                     <div class="w-16 h-16 bg-red-500 rounded-full border-4 border-red-800 flex-shrink-0 flex items-center justify-center">
                         <div class="w-2 h-2 bg-black rounded-full mx-1"></div><div class="w-2 h-2 bg-black rounded-full mx-1"></div>
                     </div>
                     <div>
                         <p class="text-2xl text-red-400 font-bold">الفيروس الأحمر (الصياد):</p>
-                        <p class="text-gray-300 mt-1 leading-relaxed">يتجاهل كل الجدران! يطير نحوك بخط مستقيم دائماً. يظهر بعد أوقات محددة (2ث و 5ث). <span class="text-white font-bold underline">تحرك بسرعة لتجنبه.</span></p>
+                        <p class="text-gray-300 mt-1 leading-relaxed">يتجاهل الجدران! يطير نحوك بخط مستقيم.</p>
                     </div>
                 </div>
             </div>
-            
             <button id="tutorialBtn" disabled class="mt-8 px-10 py-4 bg-gray-700 text-gray-400 text-2xl font-bold rounded-full shadow-lg transition duration-300">
                 فهمت (انتظر 5 ثواني...)
             </button>
@@ -219,10 +228,7 @@
 
     <script>
         // === نظام الصوت والموسيقى ===
-        let audioCtx;
-        let menuAudioInterval;
-        let gameAudioInterval;
-        let isMusicPlaying = false;
+        let audioCtx; let menuAudioInterval; let gameAudioInterval; let isMusicPlaying = false;
         
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -234,8 +240,7 @@
         document.body.addEventListener('click', () => { if (!audioCtx || audioCtx.state === 'suspended') initAudio(); }, { once: true });
         document.body.addEventListener('keydown', () => { if (!audioCtx || audioCtx.state === 'suspended') initAudio(); }, { once: true });
 
-        const menuNotes = [220, 261.63, 329.63, 293.66, 220, 196, 220, 329.63]; 
-        let noteIndex = 0;
+        const menuNotes = [220, 261.63, 329.63, 293.66, 220, 196, 220, 329.63]; let noteIndex = 0;
 
         function stopAllMusic() {
             if (menuAudioInterval) clearInterval(menuAudioInterval);
@@ -245,29 +250,19 @@
 
         function startMenuMusic() {
             if (!audioCtx || isMusicPlaying || state !== 'MENU') return;
-            stopAllMusic();
-            isMusicPlaying = true;
+            stopAllMusic(); isMusicPlaying = true;
             menuAudioInterval = setInterval(() => {
                 if(state !== 'MENU') { stopAllMusic(); return; }
-                const now = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(menuNotes[noteIndex % menuNotes.length], now);
+                const now = audioCtx.currentTime; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(menuNotes[noteIndex % menuNotes.length], now);
                 osc.connect(gain); gain.connect(audioCtx.destination);
-                gain.gain.setValueAtTime(0, now);
-                gain.gain.linearRampToValueAtTime(0.08, now + 0.1);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-                osc.start(now); osc.stop(now + 0.4);
-                noteIndex++;
+                gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.08, now + 0.1); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4); noteIndex++;
             }, 300); 
         }
 
         function startGameMusic(theme) {
-            if (!audioCtx) return;
-            stopAllMusic();
-            isMusicPlaying = true;
-            
+            if (!audioCtx) return; stopAllMusic(); isMusicPlaying = true;
             let notes = []; let speed = 300; let oscType = 'sine';
             if (theme === 'volcano') { notes = [130, 140, 130, 120]; speed = 600; oscType = 'triangle'; }
             else if (theme === 'space') { notes = [440, 554, 659, 880, 659, 554]; speed = 150; oscType = 'sine'; }
@@ -275,30 +270,23 @@
             else if (theme === 'prison') { notes = [150, 150, 200, 150]; speed = 250; oscType = 'square'; }
             else if (theme === 'circuit') { notes = [300, 400, 500, 600, 800, 600, 400]; speed = 100; oscType = 'square'; }
             else if (theme === 'meadow') { notes = [349.23, 440, 523.25, 493.88]; speed = 500; oscType = 'triangle'; }
+            else if (theme === 'training_forest' || theme.startsWith('training_')) { notes = [440, 349, 261]; speed = 400; oscType = 'sine'; }
 
             let gNoteIdx = 0;
             gameAudioInterval = setInterval(() => {
                 if (state !== 'PLAYING') { stopAllMusic(); return; }
-                const now = audioCtx.currentTime;
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = oscType;
-                osc.frequency.setValueAtTime(notes[gNoteIdx % notes.length], now);
+                const now = audioCtx.currentTime; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = oscType; osc.frequency.setValueAtTime(notes[gNoteIdx % notes.length], now);
                 osc.connect(gain); gain.connect(audioCtx.destination);
-                gain.gain.setValueAtTime(0, now);
-                gain.gain.linearRampToValueAtTime(0.05, now + 0.05);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + (speed/1000) - 0.05);
-                osc.start(now); osc.stop(now + (speed/1000));
-                gNoteIdx++;
+                gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.05, now + 0.05); gain.gain.exponentialRampToValueAtTime(0.001, now + (speed/1000) - 0.05);
+                osc.start(now); osc.stop(now + (speed/1000)); gNoteIdx++;
             }, speed);
         }
 
         function playSound(type) {
             if (!audioCtx) return;
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            const now = audioCtx.currentTime;
-            
+            osc.connect(gain); gain.connect(audioCtx.destination); const now = audioCtx.currentTime;
             switch(type) {
                 case 'jump': osc.type = 'square'; osc.frequency.setValueAtTime(350, now); osc.frequency.exponentialRampToValueAtTime(600, now + 0.1); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1); break;
                 case 'coin': osc.type = 'sine'; osc.frequency.setValueAtTime(900, now); osc.frequency.setValueAtTime(1300, now + 0.05); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15); osc.start(now); osc.stop(now + 0.15); break;
@@ -311,12 +299,8 @@
 
         // === نظام الحفظ ===
         let savedData = { unlockedLevel6: false, maxCoins: 0, hasOutfit: false, hasSeenLevel5Tutorial: false };
-        function loadGame() {
-            try { const data = localStorage.getItem('10sec_final_mega_v2'); if (data) savedData = JSON.parse(data); if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {}
-        }
-        function saveProgress() {
-            try { localStorage.setItem('10sec_final_mega_v2', JSON.stringify(savedData)); if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {}
-        }
+        function loadGame() { try { const data = localStorage.getItem('10sec_final_v7'); if (data) savedData = JSON.parse(data); if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {} }
+        function saveProgress() { try { localStorage.setItem('10sec_final_v7', JSON.stringify(savedData)); if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {} }
 
         // === واجهة المستخدم ===
         const menuUI = document.getElementById('menuUI'); const instructionsUI = document.getElementById('instructionsUI');
@@ -342,7 +326,7 @@
                 clearTimeout(cheatLockTimer); cheatLockTimer = setTimeout(() => { input.disabled = false; btn.disabled = false; msg.classList.add('hidden'); }, 3000);
             }
         }
-        window.startCheatLevel = function(idx) { isCheatModeActive = true; hideInstructions(); startGame(idx); }
+        window.startCheatLevel = function(idx) { isCheatModeActive = true; hideInstructions(); startGame('MAIN', idx); }
 
         // === إعدادات المحرك ===
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d'); const container = document.getElementById('game-container');
@@ -354,37 +338,38 @@
         }
         window.addEventListener('resize', resize); resize();
 
-        let state = 'MENU'; let currentLevelIndex = 0; let totalCoins = 0; let timeRemaining = 10.0;
+        let state = 'MENU'; let currentMode = 'MAIN';
+        let currentLevelIndex = 0; let totalCoins = 0; let timeRemaining = 10.0;
         let lastTime = 0; let globalTime = 0; let particles = []; let dustParticles = []; let animationId;
-        let currentDeathReason = "";
+        let currentDeathReason = ""; let camera = { x: 0, y: 0 };
         
         let playerHistory = []; 
-        const player = { x: 0, y: 0, width: 30, height: 30, vx: 0, vy: 0, speed: 500, jumpPower: -900, grounded: false, color: '#FF7F50', facingRight: true, hasMoved: false, moveStartTime: 0 };
+        const player = { 
+            x: 0, y: 0, width: 30, height: 30, vx: 0, vy: 0, speed: 500, jumpPower: -900, 
+            grounded: false, color: '#FF7F50', facingRight: true, hasMoved: false, moveStartTime: 0,
+            lives: 3
+        };
         const gravity = 2400; const terminalVelocity = 1400; const keys = { left: false, right: false, up: false };
 
-        // === هندسة المراحل ===
-        const levels = [
-            { theme: 'volcano', spawn: { x: 50, y: 500 }, platforms: [ { x: 0, y: 550, w: 150, h: 50, type: 'ground' }, { x: 250, y: 450, w: 60, h: 20, type: 'yellow' }, { x: 500, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 750, y: 250, w: 60, h: 20, type: 'yellow' }, { x: 500, y: 150, w: 60, h: 20, type: 'yellow' }, { x: 250, y: 100, w: 60, h: 20, type: 'yellow' }, { x: 0, y: 150, w: 100, h: 50, type: 'ground' } ], traps: [{ type: 'fireball', x: 375, y: -50, vy: 400, resetY: 650 }, { type: 'fireball', x: 625, y: -200, vy: 450, resetY: 650 }], coins: [{ x: 515, y: 310, collected: false }, { x: 265, y: 60, collected: false }], exit: { x: 20, y: 70, w: 60, h: 80 } },
-            { theme: 'space', spawn: { x: 900, y: 400 }, platforms: [ { x: 850, y: 450, w: 150, h: 150, type: 'ground' }, { x: 650, y: 380, w: 50, h: 20, type: 'yellow' }, { x: 450, y: 300, w: 50, h: 20, type: 'yellow' }, { x: 250, y: 250, w: 50, h: 20, type: 'yellow' }, { x: 0, y: 200, w: 150, h: 150, type: 'ground' } ], traps: [ { type: 'laser', x: 550, y: 0, w: 15, h: 600, state: 0, timer: 0, times: [1000, 500, 1000, 300] }, { type: 'laser', x: 350, y: 0, w: 15, h: 600, state: 2, timer: 0, times: [1000, 500, 1000, 300] } ], coins: [{ x: 460, y: 260, collected: false }, { x: 260, y: 210, collected: false }], exit: { x: 40, y: 120, w: 60, h: 80 } },
-            { theme: 'underwater', spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 450, w: 100, h: 150, type: 'ground' }, { x: 200, y: 400, w: 60, h: 20, type: 'yellow' }, { x: 400, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 600, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 800, y: 400, w: 60, h: 20, type: 'yellow' }, { x: 900, y: 450, w: 100, h: 150, type: 'ground' } ], traps: [ { type: 'mine', x: 310, y: 350, base_y: 350, range: 50, speed: 2, angle: 0 }, { type: 'mine', x: 510, y: 300, base_y: 300, range: 80, speed: 3, angle: 0 }, { type: 'mine', x: 710, y: 350, base_y: 350, range: 50, speed: 2, angle: 0 } ], coins: [{ x: 415, y: 310, collected: false }, { x: 615, y: 310, collected: false }], exit: { x: 920, y: 370, w: 60, h: 80 } },
-            { theme: 'prison', spawn: { x: 50, y: 450 }, platforms: [ { x: 0, y: 500, w: 100, h: 100, type: 'ground' }, { x: 200, y: 450, w: 80, h: 20, type: 'yellow' }, { x: 400, y: 350, w: 200, h: 20, type: 'yellow' }, { x: 700, y: 250, w: 80, h: 20, type: 'yellow' }, { x: 400, y: 150, w: 200, h: 20, type: 'yellow' }, { x: 100, y: 100, w: 150, h: 50, type: 'ground' } ], traps: [ { type: 'saw', x: 450, y: 330, radius: 20, vx: 200, minX: 400, maxX: 600, angle: 0 }, { type: 'saw', x: 550, y: 130, radius: 20, vx: -250, minX: 400, maxX: 600, angle: 0 } ], coins: [{ x: 720, y: 210, collected: false }, { x: 500, y: 100, collected: false }], exit: { x: 140, y: 20, w: 60, h: 80 } },
-            { // 5. الدائرة
-                theme: 'circuit', spawn: { x: 50, y: 500 },
-                platforms: [
-                    { x: 0, y: 550, w: 1000, h: 50, type: 'ground' }, { x: 900, y: 480, w: 100, h: 20, type: 'yellow' }, 
-                    { x: 0, y: 400, w: 850, h: 20, type: 'yellow' }, { x: 0, y: 320, w: 100, h: 20, type: 'yellow' }, { x: 150, y: 220, w: 850, h: 20, type: 'yellow' } 
-                ],
-                traps: [
-                    { type: 'static_spike', x: 400, y: 520, w: 100, h: 30 }, { type: 'static_spike', x: 400, y: 370, w: 100, h: 30 }, 
-                    { type: 'chaser_green', x: -100, y: -100, startTime: 0.5 },
-                    { type: 'chaser_red', x: 900, y: 50, speed: 100, startTime: 2.0 },
-                    { type: 'chaser_red', x: 50, y: 50, speed: 130, startTime: 5.0 }
-                ],
-                coins: [{ x: 50, y: 360, collected: false }],
-                exit: { x: 900, y: 140, w: 60, h: 80 }
-            },
-            { theme: 'meadow', spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 500, w: 100, h: 100, type: 'ground' }, { x: 150, y: 420, w: 60, h: 20, type: 'yellow' }, { x: 300, y: 320, w: 60, h: 20, type: 'yellow' }, { x: 450, y: 220, w: 60, h: 20, type: 'yellow' }, { x: 580, y: 0, w: 20, h: 250, type: 'ground' }, { x: 600, y: 450, w: 60, h: 20, type: 'yellow' }, { x: 750, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 900, y: 450, w: 100, h: 150, type: 'ground' } ], traps: [ { type: 'spear', x: 160, y: 650, w: 40, triggerDist: 80, active: false, vy: 0, minY: 350, finished: false }, { type: 'prox_spike_fall', x: 310, y: -50, w: 40, h: 60, triggerDist: 80, active: false, vy: 0 }, { type: 'prox_laser', x: 450, y: 0, w: 20, h: 600, triggerDist: 100, active: false, timer: 0 }, { type: 'prox_saw_jump', x: 610, y: 650, radius: 30, triggerDist: 150, active: false, vy: 0, angle: 0 }, { type: 'prox_bullet', x: 1000, y: 320, w: 30, h: 15, triggerDist: 350, active: false, vx: -900 } ], coins: [], exit: { x: 920, y: 370, w: 60, h: 80 } }
+        // === هندسة المراحل الأساسية ===
+        const mainLevels = [
+            { theme: 'volcano', width: 1000, time: 10.0, spawn: { x: 50, y: 500 }, platforms: [ { x: 0, y: 550, w: 150, h: 50, type: 'ground' }, { x: 250, y: 450, w: 60, h: 20, type: 'yellow' }, { x: 500, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 750, y: 250, w: 60, h: 20, type: 'yellow' }, { x: 500, y: 150, w: 60, h: 20, type: 'yellow' }, { x: 250, y: 100, w: 60, h: 20, type: 'yellow' }, { x: 0, y: 150, w: 100, h: 50, type: 'ground' } ], traps: [{ type: 'fireball', x: 375, y: -50, vy: 400, resetY: 650 }, { type: 'fireball', x: 625, y: -200, vy: 450, resetY: 650 }], coins: [{ x: 515, y: 310, collected: false }, { x: 265, y: 60, collected: false }], exit: { x: 20, y: 70, w: 60, h: 80 } },
+            { theme: 'space', width: 1000, time: 10.0, spawn: { x: 900, y: 400 }, platforms: [ { x: 850, y: 450, w: 150, h: 150, type: 'ground' }, { x: 650, y: 380, w: 50, h: 20, type: 'yellow' }, { x: 450, y: 300, w: 50, h: 20, type: 'yellow' }, { x: 250, y: 250, w: 50, h: 20, type: 'yellow' }, { x: 0, y: 200, w: 150, h: 150, type: 'ground' } ], traps: [ { type: 'laser', x: 550, y: 0, w: 15, h: 600, state: 0, timer: 0, times: [1000, 500, 1000, 300] }, { type: 'laser', x: 350, y: 0, w: 15, h: 600, state: 2, timer: 0, times: [1000, 500, 1000, 300] } ], coins: [{ x: 460, y: 260, collected: false }, { x: 260, y: 210, collected: false }], exit: { x: 40, y: 120, w: 60, h: 80 } },
+            { theme: 'underwater', width: 1000, time: 10.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 450, w: 100, h: 150, type: 'ground' }, { x: 200, y: 400, w: 60, h: 20, type: 'yellow' }, { x: 400, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 600, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 800, y: 400, w: 60, h: 20, type: 'yellow' }, { x: 900, y: 450, w: 100, h: 150, type: 'ground' } ], traps: [ { type: 'mine', x: 310, y: 350, base_y: 350, range: 50, speed: 2, angle: 0 }, { type: 'mine', x: 510, y: 300, base_y: 300, range: 80, speed: 3, angle: 0 }, { type: 'mine', x: 710, y: 350, base_y: 350, range: 50, speed: 2, angle: 0 } ], coins: [{ x: 415, y: 310, collected: false }, { x: 615, y: 310, collected: false }], exit: { x: 920, y: 370, w: 60, h: 80 } },
+            { theme: 'prison', width: 1000, time: 10.0, spawn: { x: 50, y: 450 }, platforms: [ { x: 0, y: 500, w: 100, h: 100, type: 'ground' }, { x: 200, y: 450, w: 80, h: 20, type: 'yellow' }, { x: 400, y: 350, w: 200, h: 20, type: 'yellow' }, { x: 700, y: 250, w: 80, h: 20, type: 'yellow' }, { x: 400, y: 150, w: 200, h: 20, type: 'yellow' }, { x: 100, y: 100, w: 150, h: 50, type: 'ground' } ], traps: [ { type: 'saw', x: 450, y: 330, radius: 20, vx: 200, minX: 400, maxX: 600, angle: 0 }, { type: 'saw', x: 550, y: 130, radius: 20, vx: -250, minX: 400, maxX: 600, angle: 0 } ], coins: [{ x: 720, y: 210, collected: false }, { x: 500, y: 100, collected: false }], exit: { x: 140, y: 20, w: 60, h: 80 } },
+            { theme: 'circuit', width: 1000, time: 10.0, spawn: { x: 50, y: 500 }, platforms: [ { x: 0, y: 550, w: 1000, h: 50, type: 'ground' }, { x: 900, y: 480, w: 100, h: 20, type: 'yellow' }, { x: 0, y: 400, w: 850, h: 20, type: 'yellow' }, { x: 0, y: 320, w: 100, h: 20, type: 'yellow' }, { x: 150, y: 220, w: 850, h: 20, type: 'yellow' } ], traps: [ { type: 'static_spike', x: 400, y: 520, w: 100, h: 30 }, { type: 'static_spike', x: 400, y: 370, w: 100, h: 30 }, { type: 'chaser_green', x: -100, y: -100, startTime: 0.5 }, { type: 'chaser_red', x: 900, y: 50, speed: 100, startTime: 2.0 }, { type: 'chaser_red', x: 50, y: 50, speed: 130, startTime: 5.0 } ], coins: [{ x: 50, y: 360, collected: false }], exit: { x: 900, y: 140, w: 60, h: 80 } },
+            { theme: 'meadow', width: 1000, time: 10.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 500, w: 100, h: 100, type: 'ground' }, { x: 150, y: 420, w: 60, h: 20, type: 'yellow' }, { x: 300, y: 320, w: 60, h: 20, type: 'yellow' }, { x: 450, y: 220, w: 60, h: 20, type: 'yellow' }, { x: 580, y: 0, w: 20, h: 250, type: 'ground' }, { x: 600, y: 450, w: 60, h: 20, type: 'yellow' }, { x: 750, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 900, y: 450, w: 100, h: 150, type: 'ground' } ], traps: [ { type: 'spear', x: 160, y: 650, w: 40, triggerDist: 80, active: false, vy: 0, minY: 350, finished: false }, { type: 'prox_spike_fall', x: 310, y: -50, w: 40, h: 60, triggerDist: 80, active: false, vy: 0 }, { type: 'prox_laser', x: 450, y: 0, w: 20, h: 600, triggerDist: 100, active: false, timer: 0 }, { type: 'prox_saw_jump', x: 610, y: 650, radius: 30, triggerDist: 150, active: false, vy: 0, angle: 0 }, { type: 'prox_bullet', x: 1000, y: 320, w: 30, h: 15, triggerDist: 350, active: false, vx: -900 } ], coins: [], exit: { x: 920, y: 370, w: 60, h: 80 } }
         ];
+
+        // === هندسة المراحل التدريبية ===
+        const trainingLevels = [
+            { theme: 'training_forest', width: 3000, time: 30.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 450, w: 300, h: 200, type: 'ground' }, { x: 400, y: 400, w: 100, h: 20, type: 'yellow' }, { x: 650, y: 350, w: 100, h: 20, type: 'yellow' }, { x: 900, y: 450, w: 400, h: 200, type: 'ground' }, { x: 1450, y: 350, w: 150, h: 20, type: 'yellow' }, { x: 1750, y: 250, w: 100, h: 20, type: 'yellow' }, { x: 2000, y: 450, w: 500, h: 200, type: 'ground' }, { x: 2650, y: 350, w: 80, h: 20, type: 'yellow' }, { x: 2900, y: 450, w: 100, h: 200, type: 'ground' } ], traps: [ { type: 'static_spike', x: 1000, y: 420, w: 200, h: 30 }, { type: 'falling_plat', x: 500, y: 350, w: 100, h: 20, active: false, timer: 0, renderX: 500, vy: 0 }, { type: 'falling_plat', x: 1600, y: 250, w: 100, h: 20, active: false, timer: 0, renderX: 1600, vy: 0 }, { type: 'saw', x: 2200, y: 420, radius: 20, vx: 150, minX: 2000, maxX: 2450, angle: 0 } ], coins: [], exit: { x: 2920, y: 370, w: 60, h: 80 } },
+            { theme: 'training_ice', width: 1000, time: 10.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 500, w: 100, h: 100, type: 'ground' }, { x: 200, y: 450, w: 80, h: 20, type: 'yellow' }, { x: 450, y: 350, w: 80, h: 20, type: 'yellow' }, { x: 700, y: 450, w: 80, h: 20, type: 'yellow' }, { x: 900, y: 500, w: 100, h: 100, type: 'ground' } ], traps: [ { type: 'mine', x: 350, y: 400, base_y: 400, range: 40, speed: 2, angle: 0 }, { type: 'mine', x: 600, y: 400, base_y: 400, range: 40, speed: 2.5, angle: 0 } ], coins: [], exit: { x: 920, y: 420, w: 60, h: 80 } },
+            { theme: 'training_sky', width: 1000, time: 10.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 450, w: 100, h: 150, type: 'ground' }, { x: 250, y: 350, w: 50, h: 20, type: 'yellow' }, { x: 450, y: 250, w: 50, h: 20, type: 'yellow' }, { x: 650, y: 350, w: 50, h: 20, type: 'yellow' }, { x: 900, y: 450, w: 100, h: 150, type: 'ground' } ], traps: [ { type: 'falling_plat', x: 250, y: 350, w: 50, h: 20, active: false, timer: 0, renderX: 250, vy: 0 }, { type: 'laser', x: 550, y: 0, w: 10, h: 600, state: 0, timer: 0, times: [800, 500, 800, 200] } ], coins: [], exit: { x: 920, y: 370, w: 60, h: 80 } },
+            { theme: 'training_factory', width: 1000, time: 10.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 450, w: 1000, h: 150, type: 'ground' } ], traps: [ { type: 'piston', x: 200, y: 0, w: 60, h: 450, timer: 0, speed: 2 }, { type: 'piston', x: 400, y: 0, w: 60, h: 450, timer: 1, speed: 2 }, { type: 'piston', x: 600, y: 0, w: 60, h: 450, timer: 2, speed: 2 }, { type: 'piston', x: 800, y: 0, w: 60, h: 450, timer: 3, speed: 2 } ], coins: [], exit: { x: 920, y: 370, w: 60, h: 80 } }
+        ];
+
+        let currentLevel = null;
 
         function spawnDustParticles() {
             for(let i=0; i<8; i++) {
@@ -400,10 +385,10 @@
             for(let i=0; i<40; i++) { particles.push({ x: Math.random() * logicalWidth, y: Math.random() * logicalHeight, s: Math.random() * 3 + 1, v: Math.random() * 20 + 10, offset: Math.random() * Math.PI * 2 }); }
         }
 
-        function initParticles(theme) {
+        function initParticles(theme, lvlWidth) {
             particles = []; dustParticles = []; 
-            let count = (theme==='space')?60 : (theme==='underwater')?40 : (theme==='meadow')?30 : (theme==='volcano')?50 : 0;
-            for(let i=0; i<count; i++) { particles.push({ x: Math.random() * logicalWidth, y: Math.random() * logicalHeight, s: Math.random() * (theme==='volcano'?4:3) + 1, v: Math.random() * 50 + 20, offset: Math.random() * Math.PI * 2 }); }
+            let count = (theme==='space')?60 : (theme==='underwater')?40 : (theme==='meadow')?30 : (theme==='volcano')?50 : (theme==='training_forest')?80 : (theme==='training_sky')?40 : 20;
+            for(let i=0; i<count; i++) { particles.push({ x: Math.random() * lvlWidth, y: Math.random() * logicalHeight, s: Math.random() * (theme==='volcano'?4:3) + 1, v: Math.random() * 50 + 20, offset: Math.random() * Math.PI * 2 }); }
         }
 
         window.addEventListener('keydown', (e) => {
@@ -441,67 +426,90 @@
         window.resumeGame = function() { state = 'PLAYING'; pauseUI.classList.add('hidden'); lastTime = performance.now(); requestAnimationFrame(gameLoop); }
         window.quitToMenu = function() { state = 'MENU'; pauseUI.classList.add('hidden'); hudUI.classList.add('hidden'); menuUI.classList.remove('hidden'); stopAllMusic(); startMenuMusic(); initMenuParticles(); draw(); }
 
-        window.startGame = function(startIdx = 0) {
-            if (!isCheatModeActive) totalCoins = 0; 
+        window.startGame = function(mode, startIdx, keepLives = false) {
+            currentMode = mode;
+            if (!isCheatModeActive && !keepLives) totalCoins = 0; 
             initAudio(); loadGame(); stopAllMusic();
             menuUI.classList.add('hidden'); instructionsUI.classList.add('hidden'); creditsUI.classList.add('hidden');
             gameOverUI.classList.add('hidden'); winUI.classList.add('hidden'); pauseUI.classList.add('hidden'); hudUI.classList.remove('hidden');
             document.getElementById('virusTutorialUI').classList.add('hidden');
+            
+            if (currentMode === 'TRAINING') {
+                document.getElementById('livesContainer').classList.remove('hidden');
+                document.getElementById('livesContainer').classList.add('flex');
+                if (!keepLives) { player.lives = 3; }
+                updateHeartsUI();
+            } else {
+                document.getElementById('livesContainer').classList.add('hidden');
+                document.getElementById('livesContainer').classList.remove('flex');
+            }
+
             currentLevelIndex = startIdx; loadLevel(currentLevelIndex);
-            state = 'PLAYING'; lastTime = performance.now();
+            state = 'PLAYING'; lastTime = performance.now(); globalTime = 0;
             if(animationId) cancelAnimationFrame(animationId); animationId = requestAnimationFrame(gameLoop);
         };
 
+        function updateHeartsUI() {
+            for(let i=1; i<=3; i++) {
+                if(i <= player.lives) { document.getElementById(`heart${i}`).classList.remove('heart-lost'); } 
+                else { document.getElementById(`heart${i}`).classList.add('heart-lost'); }
+            }
+        }
+
         function loadLevel(index) {
-            currentLevel = JSON.parse(JSON.stringify(levels[index]));
+            let levelData = (currentMode === 'MAIN') ? mainLevels[index] : trainingLevels[index];
+            currentLevel = JSON.parse(JSON.stringify(levelData));
             player.x = currentLevel.spawn.x; player.y = currentLevel.spawn.y; player.vx = 0; player.vy = 0; player.grounded = false; player.facingRight = true;
-            player.hasMoved = false; player.moveStartTime = 0; playerHistory = []; 
-            timeRemaining = 10.0; globalTime = 0; // إصلاح توقيت المرحلة
-            initParticles(currentLevel.theme); updateHUD(); startGameMusic(currentLevel.theme);
+            player.hasMoved = false; player.moveStartTime = 0; playerHistory = [];
+            timeRemaining = currentLevel.time; globalTime = 0; camera.x = 0; camera.y = 0;
+            initParticles(currentLevel.theme, currentLevel.width); updateHUD(); startGameMusic(currentLevel.theme);
+        }
+
+        function takeDamage(reason) {
+            if (currentMode === 'TRAINING') {
+                player.lives--;
+                updateHeartsUI();
+                gameOver(reason);
+            } else {
+                gameOver(reason);
+            }
         }
 
         function showTutorial() {
-            state = 'TUTORIAL';
-            stopAllMusic();
-            hudUI.classList.add('hidden');
-            document.getElementById('virusTutorialUI').classList.remove('hidden');
-            
-            let btn = document.getElementById('tutorialBtn');
-            btn.disabled = true;
-            btn.className = "mt-8 px-10 py-4 bg-gray-600 text-gray-400 text-2xl font-bold rounded-full shadow-lg cursor-not-allowed transition duration-300";
-            
-            let timeLeft = 5;
-            btn.innerText = `فهمت (انتظر ${timeLeft} ثواني...)`;
-            
+            state = 'TUTORIAL'; stopAllMusic(); hudUI.classList.add('hidden'); document.getElementById('virusTutorialUI').classList.remove('hidden');
+            let btn = document.getElementById('tutorialBtn'); btn.disabled = true; btn.className = "mt-8 px-10 py-4 bg-gray-600 text-gray-400 text-2xl font-bold rounded-full shadow-lg cursor-not-allowed transition duration-300";
+            let timeLeft = 5; btn.innerText = `فهمت (انتظر ${timeLeft} ثواني...)`;
             let tutInterval = setInterval(() => {
                 timeLeft--;
-                if (timeLeft > 0) {
-                    btn.innerText = `فهمت (انتظر ${timeLeft} ثواني...)`;
-                } else {
-                    clearInterval(tutInterval);
-                    btn.disabled = false;
-                    btn.innerText = "متابعة للموت!";
+                if (timeLeft > 0) { btn.innerText = `فهمت (انتظر ${timeLeft} ثواني...)`; } 
+                else {
+                    clearInterval(tutInterval); btn.disabled = false; btn.innerText = "متابعة للموت!";
                     btn.className = "mt-8 px-10 py-4 bg-red-600 hover:bg-red-500 text-white text-2xl font-bold rounded-full shadow-[0_0_20px_rgba(239,68,68,0.5)] transition transform hover:scale-105 active:scale-95 cursor-pointer";
-                    btn.onclick = () => {
-                        savedData.hasSeenLevel5Tutorial = true;
-                        saveProgress();
-                        document.getElementById('virusTutorialUI').classList.add('hidden');
-                        showNormalGameOver();
-                    };
+                    btn.onclick = () => { savedData.hasSeenLevel5Tutorial = true; saveProgress(); document.getElementById('virusTutorialUI').classList.add('hidden'); showNormalGameOver(); };
                 }
             }, 1000);
         }
 
         function showNormalGameOver() {
-            state = 'GAMEOVER';
-            document.getElementById('deathReason').innerText = currentDeathReason;
-            playSound('death');
-            gameOverUI.classList.remove('hidden');
+            state = 'GAMEOVER'; playSound('death'); gameOverUI.classList.remove('hidden');
         }
 
         function gameOver(reason) { 
-            currentDeathReason = reason;
-            if (currentLevelIndex === 4 && !savedData.hasSeenLevel5Tutorial) {
+            if (currentMode === 'TRAINING') {
+                if (player.lives > 0) {
+                    currentDeathReason = reason + ` (تبقت لك ${player.lives} أرواح)`;
+                    document.getElementById('retryBtn').innerText = "إعادة المحاولة (Space / Enter)";
+                } else {
+                    currentDeathReason = reason + " (نفدت أرواحك! العودة للبداية)";
+                    document.getElementById('retryBtn').innerText = "العودة للبداية (Space / Enter)";
+                }
+            } else {
+                currentDeathReason = reason;
+                document.getElementById('retryBtn').innerText = "إعادة البدء (Space / Enter)";
+            }
+            document.getElementById('deathReason').innerText = currentDeathReason;
+            
+            if (currentMode === 'MAIN' && currentLevelIndex === 4 && !savedData.hasSeenLevel5Tutorial) {
                 showTutorial();
             } else {
                 showNormalGameOver();
@@ -511,17 +519,30 @@
         window.returnToMenuFromDeath = function() { gameOverUI.classList.add('hidden'); returnToMenu(); };
         window.restartFromDeath = function() {
             initAudio(); gameOverUI.classList.add('hidden');
-            if (isCheatModeActive || currentLevelIndex === 5) { startGame(currentLevelIndex); } else { startGame(0); }
+            if (currentMode === 'TRAINING') {
+                if (player.lives > 0) { startGame('TRAINING', currentLevelIndex, true); } 
+                else { startGame('TRAINING', 0, false); }
+            } else if (isCheatModeActive || currentLevelIndex === 5) { 
+                startGame('MAIN', currentLevelIndex); 
+            } else { 
+                startGame('MAIN', 0); 
+            }
         };
 
         function winGame() {
             state = 'WIN'; stopAllMusic(); playSound('win'); hudUI.classList.add('hidden'); winUI.classList.remove('hidden'); document.getElementById('finalCoins').innerText = totalCoins;
-            if (totalCoins >= 9) savedData.hasOutfit = true;
-            if (currentLevelIndex === 4) { savedData.unlockedLevel6 = true; document.getElementById('winTitle').innerText = "نجاح مبهر!"; document.getElementById('winDesc').innerText = "فتحت المرحلة المستحيلة!"; } 
-            else if (currentLevelIndex === 5) { document.getElementById('winTitle').innerText = "أسطورة حية!"; document.getElementById('winDesc').innerText = "لقد هزمت اللعبة بالكامل!"; }
-            saveProgress();
-            if (savedData.hasOutfit) { document.getElementById('noReward').classList.add('hidden'); document.getElementById('hasReward').classList.remove('hidden'); document.getElementById('hasReward').classList.add('flex'); } 
-            else { document.getElementById('noReward').classList.remove('hidden'); document.getElementById('hasReward').classList.add('hidden'); document.getElementById('hasReward').classList.remove('flex'); }
+            if (currentMode === 'TRAINING') {
+                document.getElementById('winTitle').innerText = "تدريب مكتمل!"; document.getElementById('winDesc').innerText = "أنت جاهز للعبة الأساسية!";
+                document.getElementById('rewardSection').classList.add('hidden');
+            } else {
+                document.getElementById('rewardSection').classList.remove('hidden');
+                if (totalCoins >= 9) savedData.hasOutfit = true;
+                if (currentLevelIndex === 4) { savedData.unlockedLevel6 = true; document.getElementById('winTitle').innerText = "نجاح مبهر!"; document.getElementById('winDesc').innerText = "فتحت المرحلة المستحيلة!"; } 
+                else if (currentLevelIndex === 5) { document.getElementById('winTitle').innerText = "أسطورة حية!"; document.getElementById('winDesc').innerText = "لقد هزمت اللعبة بالكامل!"; }
+                saveProgress();
+                if (savedData.hasOutfit) { document.getElementById('noReward').classList.add('hidden'); document.getElementById('hasReward').classList.remove('hidden'); document.getElementById('hasReward').classList.add('flex'); } 
+                else { document.getElementById('noReward').classList.remove('hidden'); document.getElementById('hasReward').classList.add('hidden'); document.getElementById('hasReward').classList.remove('flex'); }
+            }
             isCheatModeActive = false; 
         }
 
@@ -531,7 +552,10 @@
             let t = Math.max(0, timeRemaining).toFixed(1); document.getElementById('timeDisplay').innerText = t; const tContainer = document.getElementById('timeContainer');
             if (timeRemaining <= 3) { document.getElementById('timeDisplay').classList.add('animate-pulse'); tContainer.classList.add('border-red-500', 'bg-red-900/40'); } 
             else { document.getElementById('timeDisplay').classList.remove('animate-pulse'); tContainer.classList.remove('border-red-500', 'bg-red-900/40'); }
-            document.getElementById('coinDisplay').innerText = totalCoins; document.getElementById('levelDisplay').innerText = (currentLevelIndex + 1) + "/6";
+            document.getElementById('coinDisplay').innerText = totalCoins; 
+            document.getElementById('modeDisplay').innerText = (currentMode === 'TRAINING') ? "تدريب: " : "المرحلة: ";
+            document.getElementById('levelDisplay').innerText = (currentLevelIndex + 1);
+            document.getElementById('maxLevelDisplay').innerText = (currentMode === 'TRAINING') ? trainingLevels.length : mainLevels.length;
         }
 
         function checkCollision(r1, r2) { return r1.x < r2.x + (r2.w || r2.width) && r1.x + r1.width > r2.x && r1.y < r2.y + (r2.h || r2.height) && r1.y + r1.height > r2.y; }
@@ -543,100 +567,100 @@
 
         function update(dt) {
             timeRemaining -= dt; globalTime += dt; updateHUD();
-            if (timeRemaining <= 0) { gameOver("انتهى الوقت!"); return; }
+            
+            if (timeRemaining <= 0) { takeDamage("انتهى الوقت!"); return; }
 
-            if (!player.hasMoved && (keys.left || keys.right || keys.up)) {
-                player.hasMoved = true;
-                player.moveStartTime = globalTime;
-            }
+            if (!player.hasMoved && (keys.left || keys.right || keys.up)) { player.hasMoved = true; player.moveStartTime = globalTime; }
 
             if (keys.left) player.vx = -player.speed; else if (keys.right) player.vx = player.speed; else player.vx = 0;
             
             let wasGrounded = player.grounded;
-            let oldX = player.x;
-            let oldY = player.y;
+            let oldX = player.x; let oldY = player.y;
 
             player.x += player.vx * dt;
-            if (player.x < 0) player.x = 0; if (player.x + player.width > logicalWidth) player.x = logicalWidth - player.width;
+            if (player.x < 0) player.x = 0; if (player.x + player.width > currentLevel.width) player.x = currentLevel.width - player.width;
 
-            // إصلاح اختراق الجدران الأفقية
             for (let plat of currentLevel.platforms) {
-                if (checkCollision(player, plat)) { 
-                    if (player.vx > 0 && oldX + player.width <= plat.x + 15) player.x = plat.x - player.width; 
-                    else if (player.vx < 0 && oldX >= plat.x + plat.w - 15) player.x = plat.x + plat.w; 
+                let p = plat; if (plat.type === 'falling_plat') p = {x: plat.renderX, y: plat.y, w: plat.w, h: plat.h};
+                if (checkCollision(player, p)) { 
+                    if (player.vx > 0 && oldX + player.width <= p.x + 15) player.x = p.x - player.width; 
+                    else if (player.vx < 0 && oldX >= p.x + p.w - 15) player.x = p.x + p.w; 
                     player.vx = 0; 
                 }
             }
 
-            let currentGravity = gravity; if(currentLevel.theme === 'space') currentGravity *= 0.8; if(currentLevel.theme === 'underwater') currentGravity *= 0.7;
+            let currentGravity = gravity; if(currentLevel.theme === 'space' || currentLevel.theme === 'training_sky') currentGravity *= 0.8; if(currentLevel.theme === 'underwater') currentGravity *= 0.7;
             player.vy += currentGravity * dt; if (player.vy > terminalVelocity) player.vy = terminalVelocity;
             player.y += player.vy * dt; player.grounded = false;
 
-            // إصلاح السقوط من الأرضية (Anti-Tunneling)
             for (let plat of currentLevel.platforms) {
-                if (checkCollision(player, plat)) {
-                    if (player.vy > 0 && oldY + player.height <= plat.y + 15) { 
-                        player.y = plat.y - player.height; player.vy = 0; player.grounded = true; 
-                    } else if (player.vy < 0 && oldY >= plat.y + plat.h - 15) { 
-                        player.y = plat.y + plat.h; player.vy = 0; 
-                    }
+                let p = plat; if (plat.type === 'falling_plat') p = {x: plat.renderX, y: plat.y, w: plat.w, h: plat.h};
+                if (checkCollision(player, p)) {
+                    if (player.vy > 0 && oldY + player.height <= p.y + 15) { player.y = p.y - player.height; player.vy = 0; player.grounded = true; } 
+                    else if (player.vy < 0 && oldY >= p.y + p.h - 15) { player.y = p.y + p.h; player.vy = 0; }
                 }
             }
-            
             if (!wasGrounded && player.grounded && player.vy === 0) { spawnDustParticles(); } 
 
-            if (player.y > logicalHeight) { gameOver("سقطت في الهاوية!"); return; }
+            if (player.y > logicalHeight) { takeDamage("سقطت في الهاوية!"); return; }
 
-            if (state === 'PLAYING' && player.hasMoved) {
-                playerHistory.push({x: player.x, y: player.y, time: globalTime - player.moveStartTime});
-            }
+            camera.x = player.x - (logicalWidth / 2) + (player.width / 2);
+            if (camera.x < 0) camera.x = 0;
+            if (camera.x > currentLevel.width - logicalWidth) camera.x = currentLevel.width - logicalWidth;
+
+            if (state === 'PLAYING' && player.hasMoved) { playerHistory.push({x: player.x, y: player.y, time: globalTime - player.moveStartTime}); }
 
             for (let trap of currentLevel.traps) {
-                if (trap.type === 'static_spike') {
-                    if (checkCollision(player, {x: trap.x+5, y: trap.y+5, w: trap.w-10, h: trap.h-5})) { gameOver("أشواك حادة!"); return; }
+                if (trap.type === 'falling_plat') {
+                    if (!trap.active && player.grounded && player.y + player.height === trap.y && player.x + player.width > trap.x && player.x < trap.x + trap.w) { trap.active = true; playSound('trap'); }
+                    if (trap.active) {
+                        trap.timer += dt;
+                        if (trap.timer < 0.5) { trap.renderX = trap.x + Math.sin(globalTime * 50) * 3; } 
+                        else {
+                            trap.vy += gravity * dt; trap.y += trap.vy * dt; trap.renderX = trap.x; 
+                            let idx = currentLevel.platforms.indexOf(trap); if (idx > -1) currentLevel.platforms.splice(idx, 1);
+                        }
+                    } else { trap.renderX = trap.x; }
+                }
+                else if (trap.type === 'piston') {
+                    trap.y = Math.sin(globalTime * trap.speed + trap.timer) * 200 - 150; 
+                    if (checkCollision(player, {x: trap.x, y: 0, w: trap.w, h: trap.y + trap.h})) { takeDamage("سُحقت بالمكبس!"); return; }
+                }
+                else if (trap.type === 'static_spike') {
+                    if (checkCollision(player, {x: trap.x+5, y: trap.y+5, w: trap.w-10, h: trap.h-5})) { takeDamage("أشواك حادة!"); return; }
                 }
                 else if (trap.type === 'fireball') {
                     trap.y += trap.vy * dt; if(trap.y > trap.resetY) trap.y = -50;
-                    if (checkCollision(player, {x: trap.x-10, y: trap.y-10, w: 20, h: 30})) { gameOver("أحرقتك كرة النار!"); return; }
+                    if (checkCollision(player, {x: trap.x-10, y: trap.y-10, w: 20, h: 30})) { takeDamage("أحرقتك كرة النار!"); return; }
                 } 
                 else if (trap.type === 'laser') {
                     trap.timer += dt * 1000;
                     if (trap.timer >= trap.times[trap.state]) { trap.timer = 0; trap.state = (trap.state + 1) % 4; if (trap.state === 2) playSound('laser'); }
-                    if (trap.state === 2 && checkCollision(player, trap)) { gameOver("تبخرت بالليزر!"); return; }
+                    if (trap.state === 2 && checkCollision(player, trap)) { takeDamage("تبخرت بالليزر!"); return; }
                 }
                 else if (trap.type === 'mine') {
                     trap.angle += dt * trap.speed; trap.y = trap.base_y + Math.sin(globalTime * trap.speed) * trap.range;
-                    if (checkCircleCollision(player, {x: trap.x, y: trap.y, radius: 15})) { gameOver("انفجر اللغم!"); return; }
+                    if (checkCircleCollision(player, {x: trap.x, y: trap.y, radius: 15})) { takeDamage("انفجر اللغم!"); return; }
                 }
                 else if (trap.type === 'saw') {
                     trap.x += trap.vx * dt; trap.angle += dt * 10;
                     if (trap.x >= trap.maxX) { trap.x = trap.maxX; trap.vx = -Math.abs(trap.vx); } else if (trap.x <= trap.minX) { trap.x = trap.minX; trap.vx = Math.abs(trap.vx); }
-                    if (checkCircleCollision(player, {x: trap.x, y: trap.y, radius: trap.radius - 2})) { gameOver("تمزيق بالمنشار!"); return; }
+                    if (checkCircleCollision(player, {x: trap.x, y: trap.y, radius: trap.radius - 2})) { takeDamage("تمزيق بالمنشار!"); return; }
                 }
                 else if (trap.type === 'chaser_red') {
                     if (trap.startTime === undefined || globalTime >= trap.startTime) {
                         let dx = player.x - trap.x; let dy = player.y - trap.y; let dist = Math.sqrt(dx*dx + dy*dy);
                         if(dist > 0) { trap.x += (dx/dist) * trap.speed * dt; trap.y += (dy/dist) * trap.speed * dt; }
-                        if (checkCollision(player, {x: trap.x, y: trap.y, w: 30, h: 30})) { gameOver("الفيروس الأحمر!"); return; }
+                        if (checkCollision(player, {x: trap.x, y: trap.y, w: 30, h: 30})) { takeDamage("الفيروس الأحمر!"); return; }
                     }
                 }
                 else if (trap.type === 'chaser_green') {
                     if (player.hasMoved && (globalTime - player.moveStartTime) >= trap.startTime) {
-                        let targetTime = (globalTime - player.moveStartTime) - trap.startTime;
-                        let pastPos = playerHistory[0]; 
-                        
-                        for (let i = playerHistory.length - 1; i >= 0; i--) {
-                            if (playerHistory[i].time <= targetTime) {
-                                pastPos = playerHistory[i];
-                                break;
-                            }
-                        }
-                        
+                        let targetTime = (globalTime - player.moveStartTime) - trap.startTime; let pastPos = playerHistory[0]; 
+                        for (let i = playerHistory.length - 1; i >= 0; i--) { if (playerHistory[i].time <= targetTime) { pastPos = playerHistory[i]; break; } }
                         if (pastPos) { trap.x = pastPos.x; trap.y = pastPos.y; }
-                        if (checkCollision(player, {x: trap.x, y: trap.y, w: 30, h: 30})) { gameOver("الفيروس الأخضر!"); return; }
-                    } else {
-                        trap.x = -100; trap.y = -100;
-                    }
+                        if (checkCollision(player, {x: trap.x, y: trap.y, w: 30, h: 30})) { takeDamage("الفيروس الأخضر!"); return; }
+                    } else { trap.x = -100; trap.y = -100; }
                 }
                 else if (trap.type === 'spear') {
                     if (!trap.active && !trap.finished && Math.abs(player.x - trap.x) < trap.triggerDist && player.y < trap.y) { trap.active = true; trap.vy = -1800; playSound('trap'); }
@@ -646,27 +670,27 @@
                         if (trap.vy === 0 && player.grounded && player.x < 100 && player.y <= 500) { trap.vy = 1800; }
                         if (trap.vy > 0 && trap.y > 650) { trap.active = false; trap.finished = true; }
                     }
-                    if (trap.active && !trap.finished && trap.y < 600 && checkCollision(player, {x: trap.x+5, y: trap.y, w: trap.w-10, h: 600-trap.y})) { gameOver("اخترقك الرمح!"); return; }
+                    if (trap.active && !trap.finished && trap.y < 600 && checkCollision(player, {x: trap.x+5, y: trap.y, w: trap.w-10, h: 600-trap.y})) { takeDamage("اخترقك الرمح!"); return; }
                 }
                 else if (trap.type === 'prox_spike_fall') {
                     if (!trap.active && Math.abs((player.x + player.width/2) - (trap.x + trap.w/2)) < trap.triggerDist) { trap.active = true; playSound('trap'); }
                     if (trap.active) { trap.vy += gravity * dt; trap.y += trap.vy * dt; }
-                    if (checkCollision(player, {x: trap.x+10, y: trap.y, w: 20, h: trap.h})) { gameOver("سُحقت بالشوكة!"); return; }
+                    if (checkCollision(player, {x: trap.x+10, y: trap.y, w: 20, h: trap.h})) { takeDamage("سُحقت بالشوكة!"); return; }
                 } 
                 else if (trap.type === 'prox_bullet') {
                     if (!trap.active && player.y > 200 && Math.abs(player.x - trap.x) < trap.triggerDist) { trap.active = true; playSound('trap'); }
                     if (trap.active) trap.x += trap.vx * dt;
-                    if (checkCollision(player, trap)) { gameOver("قنص!"); return; }
+                    if (checkCollision(player, trap)) { takeDamage("قنص!"); return; }
                 }
                 else if (trap.type === 'prox_laser') {
                     if (!trap.active && Math.abs(player.x - trap.x) < trap.triggerDist) { trap.active = true; playSound('laser'); }
-                    if (trap.active) { trap.timer += dt; if (trap.timer < 1.5 && checkCollision(player, trap)) { gameOver("شعاع ليزر فجائي!"); return; } }
+                    if (trap.active) { trap.timer += dt; if (trap.timer < 1.5 && checkCollision(player, trap)) { takeDamage("شعاع ليزر فجائي!"); return; } }
                 }
                 else if (trap.type === 'prox_saw_jump') {
                     if (!trap.active && Math.abs(player.x - trap.x) < trap.triggerDist) { trap.active = true; trap.vy = -1200; playSound('trap'); }
                     if (trap.active) {
                         trap.vy += gravity * dt; trap.y += trap.vy * dt; trap.angle += dt * 15;
-                        if (checkCircleCollision(player, {x: trap.x, y: trap.y, radius: trap.radius - 2})) { gameOver("منشار طائر!"); return; }
+                        if (checkCircleCollision(player, {x: trap.x, y: trap.y, radius: trap.radius - 2})) { takeDamage("منشار طائر!"); return; }
                     }
                 }
             }
@@ -675,14 +699,15 @@
                 if (!coin.collected && checkCollision(player, { x: coin.x, y: coin.y, width: 30, height: 30 })) { coin.collected = true; totalCoins++; playSound('coin'); updateHUD(); }
             }
             if (checkCollision(player, currentLevel.exit)) {
-                if (currentLevelIndex === 4 || currentLevelIndex === 5) winGame(); else { currentLevelIndex++; loadLevel(currentLevelIndex); }
+                let maxLvl = (currentMode === 'TRAINING') ? trainingLevels.length : mainLevels.length;
+                if (currentLevelIndex >= maxLvl - 1) winGame(); else { currentLevelIndex++; loadLevel(currentLevelIndex); }
             }
 
             for(let p of particles) {
-                if(currentLevel.theme === 'space') { p.x -= p.v * dt * 0.5; if(p.x < 0) { p.x = logicalWidth; p.y = Math.random() * logicalHeight; } }
-                else if (currentLevel.theme === 'underwater') { p.y -= p.v * dt; p.x += Math.sin(globalTime + p.offset); if(p.y < 0) { p.y = logicalHeight; p.x = Math.random() * logicalWidth; } }
-                else if (currentLevel.theme === 'meadow') { p.x += Math.sin(globalTime + p.offset); p.y += (p.v * 0.2) * dt; if(p.y > logicalHeight) { p.y = -10; p.x = Math.random() * logicalWidth; } }
-                else if (currentLevel.theme === 'volcano') { p.y -= p.v * dt; p.x += Math.sin(globalTime*3 + p.offset)*2; if(p.y < 0) { p.y = logicalHeight; p.x = Math.random() * logicalWidth; } }
+                if(currentLevel.theme === 'space') { p.x -= p.v * dt * 0.5; if(p.x < camera.x) { p.x = camera.x + logicalWidth; p.y = Math.random() * logicalHeight; } }
+                else if (currentLevel.theme === 'underwater') { p.y -= p.v * dt; p.x += Math.sin(globalTime + p.offset); if(p.y < 0) { p.y = logicalHeight; p.x = camera.x + Math.random() * logicalWidth; } }
+                else if (currentLevel.theme === 'meadow' || currentLevel.theme.startsWith('training_')) { p.x += Math.sin(globalTime + p.offset); p.y += (p.v * 0.2) * dt; if(p.y > logicalHeight) { p.y = -10; p.x = camera.x + Math.random() * logicalWidth; } }
+                else if (currentLevel.theme === 'volcano') { p.y -= p.v * dt; p.x += Math.sin(globalTime*3 + p.offset)*2; if(p.y < 0) { p.y = logicalHeight; p.x = camera.x + Math.random() * logicalWidth; } }
             }
 
             for(let i=dustParticles.length-1; i>=0; i--) {
@@ -694,25 +719,34 @@
         function drawBackground(theme) {
             let grad = ctx.createLinearGradient(0, 0, 0, logicalHeight);
             if (theme === 'volcano') {
-                grad.addColorStop(0, '#1a0500'); grad.addColorStop(0.5, '#4a0e00'); grad.addColorStop(1, '#8a1c00'); ctx.fillStyle = grad; ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+                grad.addColorStop(0, '#1a0500'); grad.addColorStop(0.5, '#4a0e00'); grad.addColorStop(1, '#8a1c00'); ctx.fillStyle = grad; ctx.fillRect(camera.x, 0, logicalWidth, logicalHeight);
                 ctx.fillStyle = 'rgba(255, 100, 0, 0.8)'; for(let p of particles) { ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI*2); ctx.fill(); }
-                ctx.fillStyle = '#dc2626'; ctx.beginPath(); ctx.moveTo(0, logicalHeight); for(let i=0; i<=logicalWidth; i+=20) { ctx.lineTo(i, logicalHeight - 30 + Math.sin(i*0.02 + globalTime*2)*10); } ctx.lineTo(logicalWidth, logicalHeight); ctx.fill();
-                ctx.fillStyle = '#ea580c'; ctx.beginPath(); ctx.moveTo(0, logicalHeight); for(let i=0; i<=logicalWidth; i+=20) { ctx.lineTo(i, logicalHeight - 20 + Math.sin(i*0.03 + globalTime*3)*8); } ctx.lineTo(logicalWidth, logicalHeight); ctx.fill();
+                ctx.fillStyle = '#dc2626'; ctx.beginPath(); ctx.moveTo(camera.x, logicalHeight); for(let i=camera.x; i<=camera.x+logicalWidth; i+=20) { ctx.lineTo(i, logicalHeight - 30 + Math.sin(i*0.02 + globalTime*2)*10); } ctx.lineTo(camera.x+logicalWidth, logicalHeight); ctx.fill();
+                ctx.fillStyle = '#ea580c'; ctx.beginPath(); ctx.moveTo(camera.x, logicalHeight); for(let i=camera.x; i<=camera.x+logicalWidth; i+=20) { ctx.lineTo(i, logicalHeight - 20 + Math.sin(i*0.03 + globalTime*3)*8); } ctx.lineTo(camera.x+logicalWidth, logicalHeight); ctx.fill();
             } else if (theme === 'space') {
-                grad.addColorStop(0, '#020024'); grad.addColorStop(1, '#090979'); ctx.fillStyle = grad; ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+                grad.addColorStop(0, '#020024'); grad.addColorStop(1, '#090979'); ctx.fillStyle = grad; ctx.fillRect(camera.x, 0, logicalWidth, logicalHeight);
                 ctx.fillStyle = '#ffffff'; for(let p of particles) { ctx.globalAlpha = Math.abs(Math.sin(globalTime*2 + p.offset)); ctx.fillRect(p.x, p.y, p.s, p.s); } ctx.globalAlpha = 1;
             } else if (theme === 'underwater') {
-                grad.addColorStop(0, '#005c97'); grad.addColorStop(1, '#363795'); ctx.fillStyle = grad; ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+                grad.addColorStop(0, '#005c97'); grad.addColorStop(1, '#363795'); ctx.fillStyle = grad; ctx.fillRect(camera.x, 0, logicalWidth, logicalHeight);
                 ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; for(let p of particles) { ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI*2); ctx.stroke(); }
             } else if (theme === 'prison') {
-                ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, logicalWidth, logicalHeight); ctx.strokeStyle = '#020617'; ctx.lineWidth = 15;
-                for(let i=0; i<logicalWidth; i+=80) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, logicalHeight); ctx.stroke(); }
+                ctx.fillStyle = '#0f172a'; ctx.fillRect(camera.x, 0, logicalWidth, logicalHeight); ctx.strokeStyle = '#020617'; ctx.lineWidth = 15;
+                for(let i=camera.x - (camera.x%80); i<camera.x+logicalWidth; i+=80) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, logicalHeight); ctx.stroke(); }
             } else if (theme === 'circuit') {
-                ctx.fillStyle = '#064e3b'; ctx.fillRect(0, 0, logicalWidth, logicalHeight); ctx.strokeStyle = 'rgba(16, 185, 129, 0.15)'; ctx.lineWidth = 4;
-                for(let i=0; i<logicalWidth; i+=100) { ctx.strokeRect(i, 0, 100, logicalHeight); ctx.strokeRect(0, i, logicalWidth, 100); }
-            } else if (theme === 'meadow') {
-                grad.addColorStop(0, '#7dd3fc'); grad.addColorStop(1, '#bae6fd'); ctx.fillStyle = grad; ctx.fillRect(0, 0, logicalWidth, logicalHeight);
-                ctx.fillStyle = 'rgba(134, 239, 172, 0.5)'; for(let p of particles) { ctx.beginPath(); ctx.ellipse(p.x, p.y, p.s*2, p.s, p.offset, 0, Math.PI*2); ctx.fill(); }
+                ctx.fillStyle = '#064e3b'; ctx.fillRect(camera.x, 0, logicalWidth, logicalHeight); ctx.strokeStyle = 'rgba(16, 185, 129, 0.15)'; ctx.lineWidth = 4;
+                for(let i=camera.x - (camera.x%100); i<camera.x+logicalWidth; i+=100) { ctx.strokeRect(i, 0, 100, logicalHeight); ctx.strokeRect(camera.x, (i-camera.x)%logicalHeight, logicalWidth, 100); }
+            } else if (theme === 'meadow' || theme === 'training_forest' || theme === 'training_sky') {
+                if (theme === 'training_forest') { grad.addColorStop(0, '#022c22'); grad.addColorStop(1, '#064e3b'); }
+                else if (theme === 'training_sky') { grad.addColorStop(0, '#38bdf8'); grad.addColorStop(1, '#bae6fd'); }
+                else { grad.addColorStop(0, '#7dd3fc'); grad.addColorStop(1, '#bae6fd'); }
+                ctx.fillStyle = grad; ctx.fillRect(camera.x, 0, logicalWidth, logicalHeight);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'; for(let p of particles) { ctx.beginPath(); ctx.ellipse(p.x, p.y, p.s*2, p.s, p.offset, 0, Math.PI*2); ctx.fill(); }
+            } else if (theme === 'training_ice') {
+                grad.addColorStop(0, '#e0f2fe'); grad.addColorStop(1, '#0284c7'); ctx.fillStyle = grad; ctx.fillRect(camera.x, 0, logicalWidth, logicalHeight);
+            } else if (theme === 'training_factory') {
+                ctx.fillStyle = '#1e293b'; ctx.fillRect(camera.x, 0, logicalWidth, logicalHeight);
+                ctx.strokeStyle = '#334155'; ctx.lineWidth = 20;
+                for(let i=camera.x - (camera.x%150); i<camera.x+logicalWidth; i+=150) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i+100, logicalHeight); ctx.stroke(); }
             } else if (theme === 'menu') {
                 grad.addColorStop(0, '#020617'); grad.addColorStop(1, '#1e1b4b'); ctx.fillStyle = grad; ctx.fillRect(0, 0, logicalWidth, logicalHeight);
                 ctx.strokeStyle = 'rgba(99, 102, 241, 0.15)'; ctx.lineWidth = 2;
@@ -724,24 +758,35 @@
 
         function drawPlatforms(theme) {
             for (let plat of currentLevel.platforms) {
+                let p = plat; if (plat.type === 'falling_plat') p = {x: plat.renderX, y: plat.y, w: plat.w, h: plat.h}; 
                 if (theme === 'volcano') {
-                    if (plat.type === 'ground') { ctx.fillStyle = '#292524'; ctx.fillRect(plat.x, plat.y, plat.w, plat.h); ctx.fillStyle = '#ea580c'; ctx.fillRect(plat.x, plat.y, plat.w, 4); }
-                    else { ctx.fillStyle = '#f97316'; ctx.beginPath(); ctx.roundRect(plat.x, plat.y, plat.w, plat.h, 5); ctx.fill(); }
+                    if (plat.type === 'ground') { ctx.fillStyle = '#292524'; ctx.fillRect(p.x, p.y, p.w, p.h); ctx.fillStyle = '#ea580c'; ctx.fillRect(p.x, p.y, p.w, 4); }
+                    else { ctx.fillStyle = '#f97316'; ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, p.h, 5); ctx.fill(); }
                 } else if (theme === 'space') {
-                    if (plat.type === 'ground') { ctx.fillStyle = '#1e1b4b'; ctx.fillRect(plat.x, plat.y, plat.w, plat.h); ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 3; ctx.strokeRect(plat.x, plat.y, plat.w, plat.h); }
-                    else { ctx.fillStyle = '#d946ef'; ctx.shadowBlur = 15; ctx.shadowColor = '#d946ef'; ctx.beginPath(); ctx.roundRect(plat.x, plat.y, plat.w, plat.h, 5); ctx.fill(); ctx.shadowBlur = 0; }
+                    if (plat.type === 'ground') { ctx.fillStyle = '#1e1b4b'; ctx.fillRect(p.x, p.y, p.w, p.h); ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 3; ctx.strokeRect(p.x, p.y, p.w, p.h); }
+                    else { ctx.fillStyle = '#d946ef'; ctx.shadowBlur = 15; ctx.shadowColor = '#d946ef'; ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, p.h, 5); ctx.fill(); ctx.shadowBlur = 0; }
                 } else if (theme === 'underwater') {
-                    if (plat.type === 'ground') { ctx.fillStyle = 'rgba(20, 184, 166, 0.3)'; ctx.fillRect(plat.x, plat.y, plat.w, plat.h); ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'; ctx.lineWidth = 2; ctx.strokeRect(plat.x, plat.y, plat.w, plat.h); }
-                    else { ctx.fillStyle = 'rgba(56, 189, 248, 0.8)'; ctx.beginPath(); ctx.roundRect(plat.x, plat.y, plat.w, plat.h, 5); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.stroke(); }
+                    if (plat.type === 'ground') { ctx.fillStyle = 'rgba(20, 184, 166, 0.3)'; ctx.fillRect(p.x, p.y, p.w, p.h); ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'; ctx.lineWidth = 2; ctx.strokeRect(p.x, p.y, p.w, p.h); }
+                    else { ctx.fillStyle = 'rgba(56, 189, 248, 0.8)'; ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, p.h, 5); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.stroke(); }
                 } else if (theme === 'prison') {
-                    if (plat.type === 'ground') { ctx.fillStyle = '#334155'; ctx.fillRect(plat.x, plat.y, plat.w, plat.h); ctx.strokeStyle = '#1e293b'; ctx.lineWidth=2; ctx.strokeRect(plat.x, plat.y, plat.w, plat.h); }
-                    else { ctx.fillStyle = '#94a3b8'; ctx.fillRect(plat.x, plat.y, plat.w, plat.h); }
+                    if (plat.type === 'ground') { ctx.fillStyle = '#334155'; ctx.fillRect(p.x, p.y, p.w, p.h); ctx.strokeStyle = '#1e293b'; ctx.lineWidth=2; ctx.strokeRect(p.x, p.y, p.w, p.h); }
+                    else { ctx.fillStyle = '#94a3b8'; ctx.fillRect(p.x, p.y, p.w, p.h); }
                 } else if (theme === 'circuit') {
-                    if (plat.type === 'ground') { ctx.fillStyle = '#065f46'; ctx.fillRect(plat.x, plat.y, plat.w, plat.h); ctx.fillStyle = '#10b981'; ctx.fillRect(plat.x, plat.y, plat.w, 4); }
-                    else { ctx.fillStyle = '#34d399'; ctx.fillRect(plat.x, plat.y, plat.w, plat.h); }
-                } else if (theme === 'meadow') {
-                    if (plat.type === 'ground') { ctx.fillStyle = '#86efac'; ctx.fillRect(plat.x, plat.y, plat.w, 15); ctx.fillStyle = '#d97706'; ctx.fillRect(plat.x, plat.y+15, plat.w, plat.h-15); }
-                    else { ctx.fillStyle = '#bbf7d0'; ctx.beginPath(); ctx.roundRect(plat.x, plat.y, plat.w, plat.h, 5); ctx.fill(); }
+                    if (plat.type === 'ground') { ctx.fillStyle = '#065f46'; ctx.fillRect(p.x, p.y, p.w, p.h); ctx.fillStyle = '#10b981'; ctx.fillRect(p.x, p.y, p.w, 4); }
+                    else { ctx.fillStyle = '#34d399'; ctx.fillRect(p.x, p.y, p.w, p.h); }
+                } else if (theme === 'meadow' || theme === 'training_forest') {
+                    if (plat.type === 'ground') { ctx.fillStyle = '#86efac'; ctx.fillRect(p.x, p.y, p.w, 15); ctx.fillStyle = '#d97706'; ctx.fillRect(p.x, p.y+15, p.w, p.h-15); }
+                    else if (plat.type === 'falling_plat') { ctx.fillStyle = '#b45309'; ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, p.h, 5); ctx.fill(); }
+                    else { ctx.fillStyle = '#bbf7d0'; ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, p.h, 5); ctx.fill(); }
+                } else if (theme === 'training_ice') {
+                    if (plat.type === 'ground') { ctx.fillStyle = '#bae6fd'; ctx.fillRect(p.x, p.y, p.w, p.h); ctx.fillStyle = '#fff'; ctx.fillRect(p.x, p.y, p.w, 5); }
+                    else { ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, p.h, 5); ctx.fill(); }
+                } else if (theme === 'training_sky') {
+                    if (plat.type === 'ground') { ctx.fillStyle = '#e0f2fe'; ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, p.h, 20); ctx.fill(); }
+                    else if (plat.type === 'falling_plat') { ctx.fillStyle = '#94a3b8'; ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, p.h, 10); ctx.fill(); }
+                    else { ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, p.h, 10); ctx.fill(); }
+                } else if (theme === 'training_factory') {
+                    if (plat.type === 'ground') { ctx.fillStyle = '#475569'; ctx.fillRect(p.x, p.y, p.w, p.h); ctx.fillStyle = '#f59e0b'; for(let i=p.x; i<p.x+p.w; i+=40) { ctx.beginPath(); ctx.moveTo(i, p.y); ctx.lineTo(i+20, p.y+10); ctx.lineTo(i+40, p.y); ctx.fill(); } }
                 }
             }
         }
@@ -750,6 +795,10 @@
             for (let trap of currentLevel.traps) {
                 if (trap.type === 'static_spike') {
                     ctx.fillStyle = '#94a3b8'; for(let i=0; i<trap.w; i+=20) { ctx.beginPath(); ctx.moveTo(trap.x+i, trap.y+trap.h); ctx.lineTo(trap.x+i+10, trap.y); ctx.lineTo(trap.x+i+20, trap.y+trap.h); ctx.fill(); }
+                }
+                else if (trap.type === 'piston') {
+                    ctx.fillStyle = '#64748b'; ctx.fillRect(trap.x + 20, 0, 20, trap.y + trap.h - 20); 
+                    ctx.fillStyle = '#cbd5e1'; ctx.fillRect(trap.x, trap.y + trap.h - 20, trap.w, 20); 
                 }
                 else if (trap.type === 'fireball') {
                     ctx.fillStyle = '#ea580c'; ctx.beginPath(); ctx.arc(trap.x, trap.y, 10, 0, Math.PI*2); ctx.fill();
@@ -825,6 +874,8 @@
             if (state === 'MENU') { drawBackground('menu'); ctx.restore(); return; }
             if (!currentLevel) { ctx.restore(); return; }
 
+            ctx.save(); ctx.translate(-camera.x, -camera.y);
+
             drawBackground(currentLevel.theme); drawPlatforms(currentLevel.theme); drawTraps();
 
             for (let d of dustParticles) { ctx.fillStyle = `rgba(180, 180, 180, ${d.life / d.maxLife})`; ctx.beginPath(); ctx.arc(d.x, d.y, d.s, 0, Math.PI * 2); ctx.fill(); }
@@ -859,7 +910,7 @@
                 ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.moveTo(player.x-2, player.y + 5); ctx.lineTo(player.x + 4, player.y - 12);
                 ctx.lineTo(player.x + player.width/2, player.y - 2); ctx.lineTo(player.x + player.width - 4, player.y - 12); ctx.lineTo(player.x + player.width+2, player.y + 5); ctx.fill();
             }
-            ctx.restore();
+            ctx.restore(); ctx.restore(); 
         }
 
         function gameLoop(currentTime) {
@@ -867,7 +918,7 @@
             if (state !== 'PLAYING') return; 
             
             let dt = (currentTime - lastTime) / 1000; 
-            if (dt > 0.1) dt = 0.1; // حل جذري لمنع اختراق الجدران عند انخفاض الأداء (Anti-Tunneling)
+            if (dt > 0.1) dt = 0.1; 
             lastTime = currentTime;
             
             update(dt); draw(); animationId = requestAnimationFrame(gameLoop);
