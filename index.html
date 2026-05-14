@@ -15,14 +15,20 @@
         .hidden { display: none !important; }
         .glowing-text { text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(239, 68, 68, 0.5); }
         .danger-text { text-shadow: 0 0 15px rgba(239, 68, 68, 1); }
-        .menu-btn { width: 280px; }
+        .menu-btn { width: 320px; }
         
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
         .animate-float { animation: float 4s ease-in-out infinite; }
         @keyframes pulse-glow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
         .animate-pulse-glow { animation: pulse-glow 2s infinite; }
-        .heart { display: inline-block; width: 24px; height: 24px; background-color: #ef4444; clip-path: polygon(50% 100%, 0 50%, 0 15%, 50% 0, 100% 15%, 100% 50%); transform: rotate(180deg); margin: 0 2px; }
+        .heart { display: inline-block; width: 24px; height: 24px; background-color: #ef4444; clip-path: polygon(50% 100%, 0 50%, 0 15%, 50% 0, 100% 15%, 100% 50%); transform: rotate(180deg); margin: 0 2px; transition: all 0.3s ease; }
         .heart-lost { background-color: #334155; }
+
+        /* ستايل مخصص لأشرطة التمرير الخاصة بالصوت */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -8px; box-shadow: 0 0 10px rgba(59, 130, 246, 0.8); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #475569; border-radius: 5px; border: 1px solid #1e293b; }
+        input[type=range]:focus { outline: none; }
     </style>
 </head>
 <body class="text-white select-none">
@@ -30,14 +36,12 @@
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
 
-        <!-- واجهة العدادات -->
         <div id="hudUI" class="absolute top-0 left-0 w-full p-4 flex justify-between items-start pointer-events-none hidden z-10">
             <div class="flex flex-col gap-2">
                 <div class="bg-black/80 backdrop-blur-md p-3 rounded-xl border border-white/20 shadow-lg transition-colors duration-300" id="timeContainer">
                     <div class="text-4xl font-extrabold text-red-500" id="timeDisplay">10.0</div>
                     <div class="text-sm text-gray-300 font-bold text-center">الوقت المتبقي</div>
                 </div>
-                <!-- أرواح قسم التدريب -->
                 <div id="livesContainer" class="bg-black/80 backdrop-blur-md p-2 rounded-xl border border-red-500/50 hidden items-center justify-center gap-1 shadow-lg">
                     <span id="heart1" class="heart"></span>
                     <span id="heart2" class="heart"></span>
@@ -55,37 +59,38 @@
             </div>
         </div>
 
-        <!-- القائمة الرئيسية -->
         <div id="menuUI" class="absolute inset-0 bg-transparent flex flex-col items-center justify-center p-6 text-center z-20 overflow-y-auto">
             <h1 class="text-6xl md:text-8xl font-black text-white mb-8 glowing-text tracking-wider animate-float" dir="ltr">
                 <span class="text-red-600">Ten-second</span> death
             </h1>
             
             <div class="flex flex-col gap-4 items-center z-10">
-                <button onclick="startGame('MAIN', 0)" class="menu-btn px-8 py-4 bg-gradient-to-r from-red-700 to-orange-600 hover:from-red-600 hover:to-orange-500 text-white text-3xl font-bold rounded-2xl shadow-[0_0_25px_rgba(239,68,68,0.6)] transition transform hover:scale-110 active:scale-95 border-2 border-red-400/50 animate-pulse-glow">
-                    البدء (اللعبة الأساسية)
+                <button onclick="startGame('MAIN', 0)" class="menu-btn px-8 py-4 bg-gradient-to-r from-red-700 to-orange-600 hover:from-red-600 hover:to-orange-500 text-white text-2xl font-bold rounded-2xl shadow-[0_0_25px_rgba(239,68,68,0.6)] transition transform hover:scale-110 active:scale-95 border-2 border-red-400/50 animate-pulse-glow">
+                    البدء (الأساسية)
                 </button>
 
-                <button onclick="startGame('TRAINING', 0)" class="menu-btn px-8 py-3 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-600 hover:to-emerald-500 text-white text-xl font-bold rounded-2xl shadow-[0_0_15px_rgba(34,197,94,0.5)] transition transform hover:scale-105 active:scale-95 border-2 border-green-500">
+                <button onclick="startGame('TRAINING', 0)" class="menu-btn px-8 py-4 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-600 hover:to-emerald-500 text-white text-xl font-bold rounded-2xl shadow-[0_0_15px_rgba(34,197,94,0.5)] transition transform hover:scale-105 active:scale-95 border-2 border-green-500">
                     قسم التدريب (3 أرواح)
                 </button>
                 
-                <button id="btnLevel6" onclick="startGame('MAIN', 5)" class="menu-btn hidden px-8 py-3 bg-gradient-to-r from-purple-800 to-fuchsia-900 hover:from-purple-700 hover:to-fuchsia-800 text-white text-xl font-bold rounded-2xl shadow-[0_0_15px_rgba(168,85,247,0.5)] transition transform hover:scale-105 active:scale-95 border-2 border-purple-500 danger-text">
+                <button id="btnLevel6" onclick="startGame('MAIN', 5)" class="menu-btn hidden px-8 py-4 bg-gradient-to-r from-purple-800 to-fuchsia-900 hover:from-purple-700 hover:to-fuchsia-800 text-white text-xl font-bold rounded-2xl shadow-[0_0_15px_rgba(168,85,247,0.5)] transition transform hover:scale-105 active:scale-95 border-2 border-purple-500 danger-text">
                     المرحلة المستحيلة (6)
                 </button>
 
                 <button onclick="showInstructions()" class="menu-btn px-8 py-3 bg-black/60 hover:bg-blue-900/60 text-blue-300 hover:text-white text-xl font-bold rounded-2xl shadow-lg transition transform hover:scale-105 active:scale-95 border border-blue-500/30 backdrop-blur-md">
                     شرح اللعبة
                 </button>
+                
+                <button onclick="showSettings()" class="menu-btn px-8 py-3 bg-black/60 hover:bg-gray-800/60 text-gray-300 hover:text-white text-xl font-bold rounded-2xl shadow-lg transition transform hover:scale-105 active:scale-95 border border-gray-500/30 backdrop-blur-md">
+                    الإعدادات ⚙️
+                </button>
 
                 <button onclick="showCredits()" class="menu-btn px-8 py-3 bg-black/60 hover:bg-gray-800/60 text-gray-300 hover:text-white text-xl font-bold rounded-2xl shadow-lg transition transform hover:scale-105 active:scale-95 border border-gray-500/30 backdrop-blur-md">
                     فريق العمل
                 </button>
             </div>
-            <p class="absolute bottom-4 text-gray-400 text-sm opacity-70 animate-pulse">اضغط في أي مكان لتفعيل الموسيقى</p>
         </div>
 
-        <!-- قائمة الإيقاف المؤقت -->
         <div id="pauseUI" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-6 text-center z-40 hidden backdrop-blur-md">
             <h2 class="text-6xl font-black text-white mb-8 glowing-text">إيقاف مؤقت</h2>
             <div class="flex flex-col gap-4 w-64">
@@ -98,44 +103,75 @@
             </div>
         </div>
 
-        <!-- شاشة شرح اللعبة + النظام السري -->
-        <div id="instructionsUI" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-start p-6 text-center z-30 hidden backdrop-blur-md overflow-y-auto pt-10">
-            <h2 class="text-5xl text-blue-400 font-black mb-6 glowing-text">شرح اللعبة</h2>
-            <div class="bg-black/70 p-6 rounded-3xl max-w-3xl w-full border border-blue-500/50 mb-6 shadow-2xl text-right text-white text-lg">
-                <div class="mb-4 border-b border-gray-700 pb-4">
-                    <h3 class="text-2xl text-purple-400 font-bold mb-2">القصة والمهمة:</h3>
-                    <p class="leading-relaxed text-gray-300">لقد تم احتجازك في بُعد زمني ينهار. الفضاء والزمن يتدمران بعد <strong class="text-red-400">10 ثوانٍ</strong>. النجاة تعني الوصول إلى "بوابة الزمكان".</p>
-                </div>
-                <div class="mb-4 border-b border-gray-700 pb-4">
-                    <h3 class="text-2xl text-yellow-400 font-bold mb-2">الأنظمة والتحكم:</h3>
-                    <p class="text-gray-300 mb-2">التحكم: <strong class="text-white">الأسهم</strong> أو <strong class="text-white">W, A, S, D</strong> للحركة، و <strong class="text-white">Space</strong> للقفز.</p>
-                    <p class="text-red-300 mb-2"><strong class="text-white">اللعبة الأساسية:</strong> خطأ واحد يعني الموت والعودة للمرحلة الأولى.</p>
-                    <p class="text-green-300"><strong class="text-white">قسم التدريب:</strong> لديك 3 أرواح. إذا مت، ستعيد المحاولة من نفس المرحلة. ولكن إذا فقدت جميع أرواحك، ستعود إلى بداية قسم التدريب!</p>
-                </div>
-                <div class="mt-6 pt-4 border-t-2 border-dashed border-gray-800 bg-gray-900/50 p-4 rounded-xl">
-                    <h4 class="text-gray-500 font-bold mb-2 text-sm">محطة الإدارة الزمنية (للمطورين فقط)</h4>
-                    <div class="flex gap-2 justify-end items-center">
-                        <span id="cheatLockMsg" class="text-red-500 font-bold text-sm hidden">تم القفل! انتظر 3 ثواني...</span>
-                        <input type="text" id="cheatInput" class="bg-black border border-gray-600 text-green-400 px-3 py-1 rounded outline-none focus:border-green-500 text-left" dir="ltr" placeholder="********" autocomplete="off">
-                        <button id="cheatBtn" onclick="verifyCheat()" class="bg-gray-700 hover:bg-gray-600 px-4 py-1 rounded text-white font-bold transition">إدخال</button>
+        <div id="settingsUI" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-start p-6 text-center z-30 hidden backdrop-blur-md overflow-y-auto pt-10">
+            <h2 class="text-5xl text-gray-200 font-black mb-6 glowing-text">الإعدادات</h2>
+            
+            <div class="bg-black/70 p-6 rounded-3xl max-w-2xl w-full border border-gray-600/50 mb-6 shadow-2xl text-right text-white text-lg">
+                <div class="mb-6 border-b border-gray-700 pb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-2xl text-yellow-400 font-bold">إعدادات الصوت:</h3>
+                        <button id="btnMuteAll" onclick="toggleMuteAll()" class="px-4 py-1 bg-red-600 hover:bg-red-500 rounded text-sm font-bold text-white transition">كتم الكل</button>
                     </div>
-                    <div id="cheatPanel" class="hidden mt-4 pt-4 border-t border-gray-700">
-                        <p class="text-green-400 font-bold mb-2 text-center">تم تفعيل وضع المطور! (الزي متاح + العودة من نفس المرحلة)</p>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button onclick="startCheatLevel(0)" class="bg-green-800 hover:bg-green-600 py-2 rounded font-bold">مرحلة 1</button>
-                            <button onclick="startCheatLevel(1)" class="bg-green-800 hover:bg-green-600 py-2 rounded font-bold">مرحلة 2</button>
-                            <button onclick="startCheatLevel(2)" class="bg-green-800 hover:bg-green-600 py-2 rounded font-bold">مرحلة 3</button>
-                            <button onclick="startCheatLevel(3)" class="bg-green-800 hover:bg-green-600 py-2 rounded font-bold">مرحلة 4</button>
-                            <button onclick="startCheatLevel(4)" class="bg-green-800 hover:bg-green-600 py-2 rounded font-bold">مرحلة 5</button>
-                            <button onclick="startCheatLevel(5)" class="bg-red-800 hover:bg-red-600 py-2 rounded font-bold">مرحلة 6</button>
+                    
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="w-32">الموسيقى:</span>
+                        <input type="range" id="volMusicSlider" min="0" max="1" step="0.05" value="1" oninput="updateVolume('Music', this.value)" class="flex-grow mx-4">
+                        <button id="btnMuteMusic" onclick="toggleMute('Music')" class="w-16 px-2 py-1 bg-blue-600 rounded text-sm font-bold transition">شغال</button>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="w-32">المؤثرات الحركية:</span>
+                        <input type="range" id="volMoveSlider" min="0" max="1" step="0.05" value="1" oninput="updateVolume('Move', this.value)" class="flex-grow mx-4">
+                        <button id="btnMuteMove" onclick="toggleMute('Move')" class="w-16 px-2 py-1 bg-blue-600 rounded text-sm font-bold transition">شغال</button>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="w-32">الفخاخ والأضرار:</span>
+                        <input type="range" id="volTrapSlider" min="0" max="1" step="0.05" value="1" oninput="updateVolume('Trap', this.value)" class="flex-grow mx-4">
+                        <button id="btnMuteTrap" onclick="toggleMute('Trap')" class="w-16 px-2 py-1 bg-blue-600 rounded text-sm font-bold transition">شغال</button>
+                    </div>
+                </div>
+
+                <div class="pt-2 bg-gray-900/80 p-4 rounded-xl border border-red-900/50 shadow-inner">
+                    <h4 class="text-red-400 font-bold mb-2">محطة الإدارة الزمنية (للمطورين فقط)</h4>
+                    <p class="text-xs text-gray-400 mb-3">أدخل شفرة التجاوز لتفعيل اختصارات المراحل وفتح الأزياء.</p>
+                    
+                    <div class="flex gap-2 justify-end items-center">
+                        <span id="cheatLockMsg" class="text-red-500 font-bold text-lg hidden"></span>
+                        <input type="text" id="cheatInput" onkeydown="if(event.key === 'Enter') verifyCheat()" class="bg-black border border-gray-600 text-green-400 px-3 py-2 rounded outline-none focus:border-green-500 text-left w-48" dir="ltr" placeholder="********" autocomplete="off">
+                        <button id="cheatBtn" onclick="verifyCheat()" class="bg-red-700 hover:bg-red-600 px-6 py-2 rounded text-white font-bold transition shadow-lg">إدخال</button>
+                    </div>
+                    
+                    <div id="cheatPanel" class="hidden mt-6 pt-4 border-t border-gray-700">
+                        <p class="text-green-400 font-bold mb-4 text-center border-b border-green-900 pb-2">تم تفعيل وضع المطور! (الزي متاح + العودة السريعة)</p>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button onclick="startCheatLevel(0)" class="bg-blue-800 hover:bg-blue-600 py-2 rounded font-bold shadow">مرحلة 1</button>
+                            <button onclick="startCheatLevel(1)" class="bg-blue-800 hover:bg-blue-600 py-2 rounded font-bold shadow">مرحلة 2</button>
+                            <button onclick="startCheatLevel(2)" class="bg-blue-800 hover:bg-blue-600 py-2 rounded font-bold shadow">مرحلة 3</button>
+                            <button onclick="startCheatLevel(3)" class="bg-blue-800 hover:bg-blue-600 py-2 rounded font-bold shadow">مرحلة 4</button>
+                            <button onclick="startCheatLevel(4)" class="bg-blue-800 hover:bg-blue-600 py-2 rounded font-bold shadow">مرحلة 5</button>
+                            <button onclick="startCheatLevel(5)" class="bg-red-800 hover:bg-red-600 py-2 rounded font-bold shadow border border-red-500">مرحلة 6</button>
                         </div>
                     </div>
                 </div>
             </div>
+            <button onclick="hideSettings()" class="px-10 py-3 bg-white text-slate-900 hover:bg-gray-200 text-2xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95 mb-6">عودة للقائمة</button>
+        </div>
+
+        <div id="instructionsUI" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-start p-6 text-center z-30 hidden backdrop-blur-md overflow-y-auto pt-10">
+            <h2 class="text-5xl text-blue-400 font-black mb-6 glowing-text">شرح اللعبة والمراحل</h2>
+            <div class="bg-black/70 p-6 rounded-3xl max-w-3xl w-full border border-blue-500/50 mb-6 shadow-2xl text-right text-white text-lg">
+                <div class="mb-4 border-b border-gray-700 pb-4">
+                    <p class="leading-relaxed text-gray-300">القصة: لقد تم احتجازك في بُعد زمني ينهار. الفضاء والزمن يتدمران بعد <strong class="text-red-400">10 ثوانٍ</strong>. النجاة تعني الوصول إلى "بوابة الزمكان".</p>
+                    <p class="text-gray-300 mt-2">التحكم: <strong class="text-white">الأسهم</strong> أو <strong class="text-white">W, A, S, D</strong> للحركة، <strong class="text-white">Space</strong> للقفز، و <strong class="text-white">Esc</strong> للإيقاف المؤقت.</p>
+                </div>
+                
+                <div id="dynamicLevelLore"></div>
+                
+            </div>
             <button onclick="hideInstructions()" class="px-10 py-3 bg-white text-blue-900 hover:bg-gray-200 text-2xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95 mb-6">عودة للقائمة</button>
         </div>
 
-        <!-- شاشة فريق العمل -->
         <div id="creditsUI" class="absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center p-6 text-center z-30 hidden backdrop-blur-md overflow-y-auto">
             <h2 class="text-5xl text-purple-400 font-black mb-8 glowing-text">فريق العمل</h2>
             <div class="bg-black/70 p-8 rounded-3xl max-w-md w-full border border-purple-500/50 mb-8 shadow-2xl text-white">
@@ -154,7 +190,6 @@
             <button onclick="hideCredits()" class="px-10 py-3 bg-white text-purple-900 hover:bg-gray-200 text-2xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95">عودة للقائمة</button>
         </div>
 
-        <!-- شاشة دروس الفيروسات -->
         <div id="virusTutorialUI" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-8 text-center z-50 hidden backdrop-blur-md">
             <h2 class="text-5xl font-black text-red-500 mb-6 glowing-text">تحذير أمني عالي!</h2>
             <div class="bg-gray-900/80 p-6 rounded-3xl border-2 border-red-500 max-w-2xl text-right shadow-[0_0_30px_rgba(239,68,68,0.5)]">
@@ -183,7 +218,6 @@
             </button>
         </div>
 
-        <!-- شاشة الموت -->
         <div id="gameOverUI" class="absolute inset-0 bg-red-950/90 flex flex-col items-center justify-center p-8 text-center z-20 hidden backdrop-blur-md">
             <h1 class="text-7xl font-black text-red-500 mb-2 glowing-text" dir="ltr">YOU DIED</h1>
             <p id="deathReason" class="text-3xl text-white mb-8 font-bold"></p>
@@ -197,10 +231,10 @@
             </div>
         </div>
 
-        <!-- شاشة الفوز -->
         <div id="winUI" class="absolute inset-0 bg-green-950/95 flex flex-col items-center justify-center p-8 text-center z-20 hidden backdrop-blur-md overflow-y-auto">
             <h1 class="text-6xl font-black text-white mb-4 glowing-text" id="winTitle">نهاية اللعبة!</h1>
             <p class="text-2xl text-green-300 mb-6" id="winDesc">مهارة استثنائية!</p>
+            
             <div id="rewardSection" class="bg-black/60 p-6 rounded-2xl border-2 border-yellow-500/50 mb-8 max-w-md shadow-2xl">
                 <div id="noReward" class="text-xl text-gray-200">جمعت <span id="finalCoins" class="text-yellow-400 font-bold text-3xl"></span> عملات من أصل 9.</div>
                 <div id="hasReward" class="hidden flex-col items-center">
@@ -212,10 +246,15 @@
                     <p class="text-xl text-white font-bold">تم تفعيل الزي الأخضر الملكي الدائم!</p>
                 </div>
             </div>
-            <button onclick="returnToMenu()" class="px-10 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-2xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95 border-2 border-white/20">العودة للقائمة</button>
+
+            <button id="winButtonsNormal" onclick="returnToMenu()" class="px-10 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-2xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95 border-2 border-white/20">العودة للقائمة</button>
+            
+            <div id="winButtonsLevel6" class="hidden flex-row gap-4 mt-4">
+                <button onclick="restartFromDeath()" class="px-8 py-4 bg-white text-green-900 hover:bg-gray-200 text-xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95">إعادة البدء</button>
+                <button onclick="showCreditsFromWin()" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95 border-2 border-white/20">نقل إلى فريق العمل</button>
+            </div>
         </div>
 
-        <!-- أزرار التحكم للهواتف -->
         <div id="mobileControls" class="absolute bottom-6 left-0 w-full px-6 flex justify-between items-end z-10 hidden sm:hidden pointer-events-none">
             <div class="flex gap-4 pointer-events-auto">
                 <button id="btnLeft" class="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-full flex justify-center items-center text-4xl font-bold active:bg-white/30 text-white border-2 border-white/30 shadow-lg">&larr;</button>
@@ -227,16 +266,19 @@
     </div>
 
     <script>
-        // === نظام الصوت والموسيقى ===
+        // === نظام الصوت والموسيقى المتقدم ===
         let audioCtx; let menuAudioInterval; let gameAudioInterval; let isMusicPlaying = false;
         
+        let audioVols = { Music: 1.0, Move: 1.0, Trap: 1.0 }; 
+        let oldVols = { Music: 1.0, Move: 1.0, Trap: 1.0 };   
+
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
             if (state === 'MENU') startMenuMusic();
         }
 
-        window.addEventListener('load', () => { initAudio(); });
+        window.addEventListener('load', () => { loadSettings(); initAudio(); });
         document.body.addEventListener('click', () => { if (!audioCtx || audioCtx.state === 'suspended') initAudio(); }, { once: true });
         document.body.addEventListener('keydown', () => { if (!audioCtx || audioCtx.state === 'suspended') initAudio(); }, { once: true });
 
@@ -256,7 +298,8 @@
                 const now = audioCtx.currentTime; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
                 osc.type = 'sine'; osc.frequency.setValueAtTime(menuNotes[noteIndex % menuNotes.length], now);
                 osc.connect(gain); gain.connect(audioCtx.destination);
-                gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.08, now + 0.1); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                let vol = audioVols.Music * 0.08;
+                gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(vol, now + 0.1); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
                 osc.start(now); osc.stop(now + 0.4); noteIndex++;
             }, 300); 
         }
@@ -278,7 +321,8 @@
                 const now = audioCtx.currentTime; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
                 osc.type = oscType; osc.frequency.setValueAtTime(notes[gNoteIdx % notes.length], now);
                 osc.connect(gain); gain.connect(audioCtx.destination);
-                gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.05, now + 0.05); gain.gain.exponentialRampToValueAtTime(0.001, now + (speed/1000) - 0.05);
+                let vol = audioVols.Music * 0.05;
+                gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(vol, now + 0.05); gain.gain.exponentialRampToValueAtTime(0.001, now + (speed/1000) - 0.05);
                 osc.start(now); osc.stop(now + (speed/1000)); gNoteIdx++;
             }, speed);
         }
@@ -287,33 +331,134 @@
             if (!audioCtx) return;
             const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination); const now = audioCtx.currentTime;
+            
+            let mVol = audioVols.Move; let tVol = audioVols.Trap;
+
             switch(type) {
-                case 'jump': osc.type = 'square'; osc.frequency.setValueAtTime(350, now); osc.frequency.exponentialRampToValueAtTime(600, now + 0.1); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1); break;
-                case 'coin': osc.type = 'sine'; osc.frequency.setValueAtTime(900, now); osc.frequency.setValueAtTime(1300, now + 0.05); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15); osc.start(now); osc.stop(now + 0.15); break;
-                case 'death': osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(30, now + 0.6); gain.gain.setValueAtTime(0.15, now); gain.gain.linearRampToValueAtTime(0, now + 0.6); osc.start(now); osc.stop(now + 0.6); break;
-                case 'trap': osc.type = 'triangle'; osc.frequency.setValueAtTime(80, now); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2); break;
-                case 'laser': osc.type = 'square'; osc.frequency.setValueAtTime(1200, now); osc.frequency.linearRampToValueAtTime(300, now + 0.2); gain.gain.setValueAtTime(0.15, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2); break;
-                case 'win': [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type = 'sine'; o.frequency.value = freq; o.connect(g); g.connect(audioCtx.destination); g.gain.setValueAtTime(0, now + i*0.1); g.gain.linearRampToValueAtTime(0.1, now + i*0.1 + 0.05); g.gain.exponentialRampToValueAtTime(0.01, now + i*0.1 + 0.4); o.start(now + i*0.1); o.stop(now + i*0.1 + 0.4); }); break;
+                case 'jump': osc.type = 'square'; osc.frequency.setValueAtTime(350, now); osc.frequency.exponentialRampToValueAtTime(600, now + 0.1); gain.gain.setValueAtTime(0.05 * mVol, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1); osc.start(now); osc.stop(now + 0.1); break;
+                case 'coin': osc.type = 'sine'; osc.frequency.setValueAtTime(900, now); osc.frequency.setValueAtTime(1300, now + 0.05); gain.gain.setValueAtTime(0.1 * mVol, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15); osc.start(now); osc.stop(now + 0.15); break;
+                case 'death': osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, now); osc.frequency.exponentialRampToValueAtTime(30, now + 0.6); gain.gain.setValueAtTime(0.15 * tVol, now); gain.gain.linearRampToValueAtTime(0, now + 0.6); osc.start(now); osc.stop(now + 0.6); break;
+                case 'hurt': osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(80, now + 0.3); gain.gain.setValueAtTime(0.15 * tVol, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3); osc.start(now); osc.stop(now + 0.3); break;
+                case 'trap': osc.type = 'triangle'; osc.frequency.setValueAtTime(80, now); gain.gain.setValueAtTime(0.2 * tVol, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2); osc.start(now); osc.stop(now + 0.2); break;
+                case 'laser': osc.type = 'square'; osc.frequency.setValueAtTime(1200, now); osc.frequency.linearRampToValueAtTime(300, now + 0.2); gain.gain.setValueAtTime(0.15 * tVol, now); gain.gain.linearRampToValueAtTime(0.001, now + 0.2); osc.start(now); osc.stop(now + 0.2); break;
+                case 'win': [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => { const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.type = 'sine'; o.frequency.value = freq; o.connect(g); g.connect(audioCtx.destination); g.gain.setValueAtTime(0, now + i*0.1); g.gain.linearRampToValueAtTime(0.1 * mVol, now + i*0.1 + 0.05); g.gain.exponentialRampToValueAtTime(0.001, now + i*0.1 + 0.4); o.start(now + i*0.1); o.stop(now + i*0.1 + 0.4); }); break;
             }
         }
 
         // === نظام الحفظ ===
-        let savedData = { unlockedLevel6: false, maxCoins: 0, hasOutfit: false, hasSeenLevel5Tutorial: false };
-        function loadGame() { try { const data = localStorage.getItem('10sec_final_v7'); if (data) savedData = JSON.parse(data); if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {} }
-        function saveProgress() { try { localStorage.setItem('10sec_final_v7', JSON.stringify(savedData)); if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {} }
+        let savedData = { 
+            unlockedLevel6: false, maxCoins: 0, hasOutfit: false, hasSeenLevel5Tutorial: false,
+            maxMainLvl: 0, maxTrainLvl: 0, volMusic: 1.0, volMove: 1.0, volTrap: 1.0
+        };
 
-        // === واجهة المستخدم ===
+        const LORE_MAIN = [
+            { name: "البركان العظيم", desc: "اهرب للأعلى قبل أن تلتهمك الحمم المتصاعدة والكويكبات النارية." },
+            { name: "فراغ الفضاء", desc: "اقفز بحذر بين المنصات وتفادى أشعة الليزر التي تنشط بشكل دوري." },
+            { name: "الخندق المائي", desc: "تجاوز الألغام البحرية الشائكة التي تطفو وتدور ببطء." },
+            { name: "السجن الحديدي", desc: "تسلق للهروب من هذا السجن وتجنب المناشير الدوارة الحادة." },
+            { name: "الدائرة الإلكترونية", desc: "متاهة معقدة تتبعك فيها فيروسات ظلية (الأخضر يتبع مسارك، الأحمر يخترق الجدران)." },
+            { name: "المرج المستحيل", desc: "كل شيء يبدو هادئاً حتى تقترب! فخاخ فجائية تنتظر خطوتك لتنقض عليك." }
+        ];
+
+        const LORE_TRAIN = [
+            { name: "الغابة الكبيرة", desc: "مرحلة عملاقة (30 ثانية). تعلم القفز واحذر الأرضيات المتساقطة." },
+            { name: "القلعة الجليدية", desc: "منصات زلقة وألغام متحركة لتدريب التوقيت." },
+            { name: "السماء والغيوم", desc: "قفزات دقيقة بين المنصات وتفادي الليزر المتقطع." },
+            { name: "مصنع المكابس", desc: "تدريب على السرعة وتجاوز المكابس الساحقة من السقف." }
+        ];
+
+        function loadGame() { 
+            try { const data = localStorage.getItem('10sec_final_mega_v9'); if (data) savedData = { ...savedData, ...JSON.parse(data) }; if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {} 
+        }
+
+        function saveProgress() { 
+            try { localStorage.setItem('10sec_final_mega_v9', JSON.stringify(savedData)); if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {} 
+        }
+
+        // === واجهة المستخدم والإعدادات ===
         const menuUI = document.getElementById('menuUI'); const instructionsUI = document.getElementById('instructionsUI');
         const creditsUI = document.getElementById('creditsUI'); const gameOverUI = document.getElementById('gameOverUI');
-        const winUI = document.getElementById('winUI'); const hudUI = document.getElementById('hudUI'); const pauseUI = document.getElementById('pauseUI');
+        const winUI = document.getElementById('winUI'); const hudUI = document.getElementById('hudUI'); 
+        const pauseUI = document.getElementById('pauseUI'); const settingsUI = document.getElementById('settingsUI');
 
-        window.showInstructions = function() { menuUI.classList.add('hidden'); instructionsUI.classList.remove('hidden'); };
-        window.hideInstructions = function() { instructionsUI.classList.add('hidden'); menuUI.classList.remove('hidden'); document.getElementById('cheatInput').value = ''; };
+        function loadSettings() {
+            loadGame();
+            audioVols.Music = savedData.volMusic !== undefined ? savedData.volMusic : 1.0;
+            audioVols.Move = savedData.volMove !== undefined ? savedData.volMove : 1.0;
+            audioVols.Trap = savedData.volTrap !== undefined ? savedData.volTrap : 1.0;
+            document.getElementById('volMusicSlider').value = audioVols.Music;
+            document.getElementById('volMoveSlider').value = audioVols.Move;
+            document.getElementById('volTrapSlider').value = audioVols.Trap;
+            updateMuteBtn('Music'); updateMuteBtn('Move'); updateMuteBtn('Trap'); updateMuteAllBtn();
+        }
+
+        window.updateVolume = function(type, val) {
+            val = parseFloat(val); audioVols[type] = val; savedData[`vol${type}`] = val;
+            if(val > 0) oldVols[type] = val; 
+            saveProgress(); updateMuteBtn(type); updateMuteAllBtn();
+        }
+
+        window.toggleMute = function(type) {
+            let slider = document.getElementById(`vol${type}Slider`);
+            if (audioVols[type] > 0) { oldVols[type] = audioVols[type]; slider.value = 0; updateVolume(type, 0); } 
+            else { let restore = oldVols[type] > 0 ? oldVols[type] : 1; slider.value = restore; updateVolume(type, restore); }
+        }
+
+        window.toggleMuteAll = function() {
+            let allMuted = (audioVols.Music === 0 && audioVols.Move === 0 && audioVols.Trap === 0);
+            if (allMuted) {
+                document.getElementById('volMusicSlider').value = oldVols.Music > 0 ? oldVols.Music : 1; updateVolume('Music', oldVols.Music > 0 ? oldVols.Music : 1);
+                document.getElementById('volMoveSlider').value = oldVols.Move > 0 ? oldVols.Move : 1; updateVolume('Move', oldVols.Move > 0 ? oldVols.Move : 1);
+                document.getElementById('volTrapSlider').value = oldVols.Trap > 0 ? oldVols.Trap : 1; updateVolume('Trap', oldVols.Trap > 0 ? oldVols.Trap : 1);
+            } else {
+                if (audioVols.Music > 0) oldVols.Music = audioVols.Music; if (audioVols.Move > 0) oldVols.Move = audioVols.Move; if (audioVols.Trap > 0) oldVols.Trap = audioVols.Trap;
+                document.getElementById('volMusicSlider').value = 0; updateVolume('Music', 0);
+                document.getElementById('volMoveSlider').value = 0; updateVolume('Move', 0);
+                document.getElementById('volTrapSlider').value = 0; updateVolume('Trap', 0);
+            }
+        }
+
+        function updateMuteBtn(type) {
+            let btn = document.getElementById(`btnMute${type}`);
+            if (audioVols[type] == 0) { btn.innerText = "مكتوم"; btn.className = "w-16 px-2 py-1 bg-gray-600 rounded text-sm font-bold text-gray-300 transition"; }
+            else { btn.innerText = "شغال"; btn.className = "w-16 px-2 py-1 bg-blue-600 hover:bg-blue-500 rounded text-sm font-bold text-white transition"; }
+        }
+
+        function updateMuteAllBtn() {
+            let btn = document.getElementById('btnMuteAll'); if(!btn) return;
+            let allMuted = (audioVols.Music === 0 && audioVols.Move === 0 && audioVols.Trap === 0);
+            if(allMuted) { btn.innerText = "إلغاء كتم الكل"; btn.className = "px-4 py-1 bg-gray-600 hover:bg-gray-500 rounded text-sm font-bold text-gray-300 transition"; } 
+            else { btn.innerText = "كتم الكل"; btn.className = "px-4 py-1 bg-red-600 hover:bg-red-500 rounded text-sm font-bold text-white transition"; }
+        }
+
+        window.showSettings = function() { menuUI.classList.add('hidden'); settingsUI.classList.remove('hidden'); document.getElementById('cheatInput').value = ''; };
+        window.hideSettings = function() { settingsUI.classList.add('hidden'); menuUI.classList.remove('hidden'); };
+
+        window.showInstructions = function() { menuUI.classList.add('hidden'); generateLoreHTML(); instructionsUI.classList.remove('hidden'); };
+        window.hideInstructions = function() { instructionsUI.classList.add('hidden'); menuUI.classList.remove('hidden'); };
+        
         window.showCredits = function() { menuUI.classList.add('hidden'); creditsUI.classList.remove('hidden'); };
         window.hideCredits = function() { creditsUI.classList.add('hidden'); menuUI.classList.remove('hidden'); };
+        
+        window.showCreditsFromWin = function() { winUI.classList.add('hidden'); creditsUI.classList.remove('hidden'); };
+
+        function generateLoreHTML() {
+            let html = '<div class="grid md:grid-cols-2 gap-6">';
+            html += '<div class="bg-gray-900/60 p-4 rounded-xl border border-gray-700"><h4 class="text-xl text-yellow-400 font-bold mb-3 border-b border-gray-600 pb-2">المراحل الأساسية</h4><ul class="space-y-3">';
+            for(let i=0; i<6; i++) {
+                if (i <= savedData.maxMainLvl || isCheatModeActive) { html += `<li><strong class="text-red-400">المرحلة ${i+1}: ${LORE_MAIN[i].name}</strong><p class="text-sm text-gray-300">${LORE_MAIN[i].desc}</p></li>`; } 
+                else { html += `<li><strong class="text-gray-500">المرحلة ${i+1} (مقفلة)</strong></li>`; }
+            }
+            html += '</ul></div><div class="bg-gray-900/60 p-4 rounded-xl border border-gray-700"><h4 class="text-xl text-green-400 font-bold mb-3 border-b border-gray-600 pb-2">قسم التدريب</h4><ul class="space-y-3">';
+            for(let i=0; i<4; i++) {
+                if (i <= savedData.maxTrainLvl || isCheatModeActive) { html += `<li><strong class="text-green-300">تدريب ${i+1}: ${LORE_TRAIN[i].name}</strong><p class="text-sm text-gray-300">${LORE_TRAIN[i].desc}</p></li>`; } 
+                else { html += `<li><strong class="text-gray-500">تدريب ${i+1} (مقفل)</strong></li>`; }
+            }
+            html += '</ul></div></div>'; document.getElementById('dynamicLevelLore').innerHTML = html;
+        }
 
         // === النظام السري ===
-        let isCheatModeActive = false; let cheatLockTimer = null;
+        let isCheatModeActive = false; let cheatCountdown = 0;
         window.verifyCheat = function() {
             const input = document.getElementById('cheatInput'); const btn = document.getElementById('cheatBtn');
             const msg = document.getElementById('cheatLockMsg'); const panel = document.getElementById('cheatPanel');
@@ -323,10 +468,16 @@
                 panel.classList.remove('hidden'); input.classList.add('hidden'); btn.classList.add('hidden'); msg.classList.add('hidden');
             } else {
                 input.disabled = true; btn.disabled = true; msg.classList.remove('hidden'); input.value = '';
-                clearTimeout(cheatLockTimer); cheatLockTimer = setTimeout(() => { input.disabled = false; btn.disabled = false; msg.classList.add('hidden'); }, 3000);
+                cheatCountdown = 3; msg.innerText = `قفل! انتظر ${cheatCountdown}...`;
+                clearInterval(cheatLockTimer);
+                cheatLockTimer = setInterval(() => { 
+                    cheatCountdown--;
+                    if(cheatCountdown > 0) { msg.innerText = `قفل! انتظر ${cheatCountdown}...`; }
+                    else { clearInterval(cheatLockTimer); input.disabled = false; btn.disabled = false; msg.classList.add('hidden'); input.focus(); }
+                }, 1000);
             }
         }
-        window.startCheatLevel = function(idx) { isCheatModeActive = true; hideInstructions(); startGame('MAIN', idx); }
+        window.startCheatLevel = function(idx) { isCheatModeActive = true; hideSettings(); startGame('MAIN', idx); }
 
         // === إعدادات المحرك ===
         const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d'); const container = document.getElementById('game-container');
@@ -344,14 +495,10 @@
         let currentDeathReason = ""; let camera = { x: 0, y: 0 };
         
         let playerHistory = []; 
-        const player = { 
-            x: 0, y: 0, width: 30, height: 30, vx: 0, vy: 0, speed: 500, jumpPower: -900, 
-            grounded: false, color: '#FF7F50', facingRight: true, hasMoved: false, moveStartTime: 0,
-            lives: 3
-        };
+        const player = { x: 0, y: 0, width: 30, height: 30, vx: 0, vy: 0, speed: 500, jumpPower: -900, grounded: false, color: '#FF7F50', facingRight: true, hasMoved: false, moveStartTime: 0, lives: 3, invulnTimer: 0 };
         const gravity = 2400; const terminalVelocity = 1400; const keys = { left: false, right: false, up: false };
 
-        // === هندسة المراحل الأساسية ===
+        // === هندسة المراحل ===
         const mainLevels = [
             { theme: 'volcano', width: 1000, time: 10.0, spawn: { x: 50, y: 500 }, platforms: [ { x: 0, y: 550, w: 150, h: 50, type: 'ground' }, { x: 250, y: 450, w: 60, h: 20, type: 'yellow' }, { x: 500, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 750, y: 250, w: 60, h: 20, type: 'yellow' }, { x: 500, y: 150, w: 60, h: 20, type: 'yellow' }, { x: 250, y: 100, w: 60, h: 20, type: 'yellow' }, { x: 0, y: 150, w: 100, h: 50, type: 'ground' } ], traps: [{ type: 'fireball', x: 375, y: -50, vy: 400, resetY: 650 }, { type: 'fireball', x: 625, y: -200, vy: 450, resetY: 650 }], coins: [{ x: 515, y: 310, collected: false }, { x: 265, y: 60, collected: false }], exit: { x: 20, y: 70, w: 60, h: 80 } },
             { theme: 'space', width: 1000, time: 10.0, spawn: { x: 900, y: 400 }, platforms: [ { x: 850, y: 450, w: 150, h: 150, type: 'ground' }, { x: 650, y: 380, w: 50, h: 20, type: 'yellow' }, { x: 450, y: 300, w: 50, h: 20, type: 'yellow' }, { x: 250, y: 250, w: 50, h: 20, type: 'yellow' }, { x: 0, y: 200, w: 150, h: 150, type: 'ground' } ], traps: [ { type: 'laser', x: 550, y: 0, w: 15, h: 600, state: 0, timer: 0, times: [1000, 500, 1000, 300] }, { type: 'laser', x: 350, y: 0, w: 15, h: 600, state: 2, timer: 0, times: [1000, 500, 1000, 300] } ], coins: [{ x: 460, y: 260, collected: false }, { x: 260, y: 210, collected: false }], exit: { x: 40, y: 120, w: 60, h: 80 } },
@@ -361,7 +508,6 @@
             { theme: 'meadow', width: 1000, time: 10.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 500, w: 100, h: 100, type: 'ground' }, { x: 150, y: 420, w: 60, h: 20, type: 'yellow' }, { x: 300, y: 320, w: 60, h: 20, type: 'yellow' }, { x: 450, y: 220, w: 60, h: 20, type: 'yellow' }, { x: 580, y: 0, w: 20, h: 250, type: 'ground' }, { x: 600, y: 450, w: 60, h: 20, type: 'yellow' }, { x: 750, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 900, y: 450, w: 100, h: 150, type: 'ground' } ], traps: [ { type: 'spear', x: 160, y: 650, w: 40, triggerDist: 80, active: false, vy: 0, minY: 350, finished: false }, { type: 'prox_spike_fall', x: 310, y: -50, w: 40, h: 60, triggerDist: 80, active: false, vy: 0 }, { type: 'prox_laser', x: 450, y: 0, w: 20, h: 600, triggerDist: 100, active: false, timer: 0 }, { type: 'prox_saw_jump', x: 610, y: 650, radius: 30, triggerDist: 150, active: false, vy: 0, angle: 0 }, { type: 'prox_bullet', x: 1000, y: 320, w: 30, h: 15, triggerDist: 350, active: false, vx: -900 } ], coins: [], exit: { x: 920, y: 370, w: 60, h: 80 } }
         ];
 
-        // === هندسة المراحل التدريبية ===
         const trainingLevels = [
             { theme: 'training_forest', width: 3000, time: 30.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 450, w: 300, h: 200, type: 'ground' }, { x: 400, y: 400, w: 100, h: 20, type: 'yellow' }, { x: 650, y: 350, w: 100, h: 20, type: 'yellow' }, { x: 900, y: 450, w: 400, h: 200, type: 'ground' }, { x: 1450, y: 350, w: 150, h: 20, type: 'yellow' }, { x: 1750, y: 250, w: 100, h: 20, type: 'yellow' }, { x: 2000, y: 450, w: 500, h: 200, type: 'ground' }, { x: 2650, y: 350, w: 80, h: 20, type: 'yellow' }, { x: 2900, y: 450, w: 100, h: 200, type: 'ground' } ], traps: [ { type: 'static_spike', x: 1000, y: 420, w: 200, h: 30 }, { type: 'falling_plat', x: 500, y: 350, w: 100, h: 20, active: false, timer: 0, renderX: 500, vy: 0 }, { type: 'falling_plat', x: 1600, y: 250, w: 100, h: 20, active: false, timer: 0, renderX: 1600, vy: 0 }, { type: 'saw', x: 2200, y: 420, radius: 20, vx: 150, minX: 2000, maxX: 2450, angle: 0 } ], coins: [], exit: { x: 2920, y: 370, w: 60, h: 80 } },
             { theme: 'training_ice', width: 1000, time: 10.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 500, w: 100, h: 100, type: 'ground' }, { x: 200, y: 450, w: 80, h: 20, type: 'yellow' }, { x: 450, y: 350, w: 80, h: 20, type: 'yellow' }, { x: 700, y: 450, w: 80, h: 20, type: 'yellow' }, { x: 900, y: 500, w: 100, h: 100, type: 'ground' } ], traps: [ { type: 'mine', x: 350, y: 400, base_y: 400, range: 40, speed: 2, angle: 0 }, { type: 'mine', x: 600, y: 400, base_y: 400, range: 40, speed: 2.5, angle: 0 } ], coins: [], exit: { x: 920, y: 420, w: 60, h: 80 } },
@@ -369,20 +515,12 @@
             { theme: 'training_factory', width: 1000, time: 10.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 450, w: 1000, h: 150, type: 'ground' } ], traps: [ { type: 'piston', x: 200, y: 0, w: 60, h: 450, timer: 0, speed: 2 }, { type: 'piston', x: 400, y: 0, w: 60, h: 450, timer: 1, speed: 2 }, { type: 'piston', x: 600, y: 0, w: 60, h: 450, timer: 2, speed: 2 }, { type: 'piston', x: 800, y: 0, w: 60, h: 450, timer: 3, speed: 2 } ], coins: [], exit: { x: 920, y: 370, w: 60, h: 80 } }
         ];
 
-        let currentLevel = null;
-
         function spawnDustParticles() {
-            for(let i=0; i<8; i++) {
-                dustParticles.push({
-                    x: player.x + player.width/2 + (Math.random()*16 - 8), y: player.y + player.height,
-                    vx: (Math.random() - 0.5) * 80, vy: Math.random() * -60 - 20, life: 0.5, maxLife: 0.5, s: Math.random() * 3 + 2
-                });
-            }
+            for(let i=0; i<8; i++) { dustParticles.push({ x: player.x + player.width/2 + (Math.random()*16 - 8), y: player.y + player.height, vx: (Math.random() - 0.5) * 80, vy: Math.random() * -60 - 20, life: 0.5, maxLife: 0.5, s: Math.random() * 3 + 2 }); }
         }
 
         function initMenuParticles() {
-            particles = [];
-            for(let i=0; i<40; i++) { particles.push({ x: Math.random() * logicalWidth, y: Math.random() * logicalHeight, s: Math.random() * 3 + 1, v: Math.random() * 20 + 10, offset: Math.random() * Math.PI * 2 }); }
+            particles = []; for(let i=0; i<40; i++) { particles.push({ x: Math.random() * logicalWidth, y: Math.random() * logicalHeight, s: Math.random() * 3 + 1, v: Math.random() * 20 + 10, offset: Math.random() * Math.PI * 2 }); }
         }
 
         function initParticles(theme, lvlWidth) {
@@ -392,14 +530,8 @@
         }
 
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'Escape') {
-                if (state === 'PLAYING') { state = 'PAUSED'; pauseUI.classList.remove('hidden'); } 
-                else if (state === 'PAUSED') { resumeGame(); }
-            }
-            if (state === 'GAMEOVER') {
-                if (e.code === 'Space' || e.code === 'Enter') { restartFromDeath(); return; }
-                if (e.code === 'Escape' || e.code === 'Delete') { returnToMenuFromDeath(); return; }
-            }
+            if (e.code === 'Escape') { if (state === 'PLAYING') { state = 'PAUSED'; pauseUI.classList.remove('hidden'); } else if (state === 'PAUSED') { resumeGame(); } }
+            if (state === 'GAMEOVER') { if (e.code === 'Space' || e.code === 'Enter') { restartFromDeath(); return; } if (e.code === 'Escape' || e.code === 'Delete') { returnToMenuFromDeath(); return; } }
             let k = e.key.toLowerCase();
             if (e.code === 'ArrowLeft' || k === 'a') { keys.left = true; player.facingRight = false; }
             if (e.code === 'ArrowRight' || k === 'd') { keys.right = true; player.facingRight = true; }
@@ -419,9 +551,7 @@
         }
         setupTouch('btnLeft', 'left'); setupTouch('btnRight', 'right'); setupTouch('btnJump', 'up');
 
-        function jump() {
-            if (player.grounded && state === 'PLAYING') { player.vy = player.jumpPower; player.grounded = false; playSound('jump'); spawnDustParticles(); }
-        }
+        function jump() { if (player.grounded && state === 'PLAYING') { player.vy = player.jumpPower; player.grounded = false; playSound('jump'); spawnDustParticles(); } }
 
         window.resumeGame = function() { state = 'PLAYING'; pauseUI.classList.add('hidden'); lastTime = performance.now(); requestAnimationFrame(gameLoop); }
         window.quitToMenu = function() { state = 'MENU'; pauseUI.classList.add('hidden'); hudUI.classList.add('hidden'); menuUI.classList.remove('hidden'); stopAllMusic(); startMenuMusic(); initMenuParticles(); draw(); }
@@ -430,21 +560,22 @@
             currentMode = mode;
             if (!isCheatModeActive && !keepLives) totalCoins = 0; 
             initAudio(); loadGame(); stopAllMusic();
-            menuUI.classList.add('hidden'); instructionsUI.classList.add('hidden'); creditsUI.classList.add('hidden');
+            menuUI.classList.add('hidden'); instructionsUI.classList.add('hidden'); creditsUI.classList.add('hidden'); settingsUI.classList.add('hidden');
             gameOverUI.classList.add('hidden'); winUI.classList.add('hidden'); pauseUI.classList.add('hidden'); hudUI.classList.remove('hidden');
             document.getElementById('virusTutorialUI').classList.add('hidden');
             
             if (currentMode === 'TRAINING') {
-                document.getElementById('livesContainer').classList.remove('hidden');
-                document.getElementById('livesContainer').classList.add('flex');
-                if (!keepLives) { player.lives = 3; }
-                updateHeartsUI();
+                document.getElementById('livesContainer').classList.remove('hidden'); document.getElementById('livesContainer').classList.add('flex');
+                if (!keepLives) { player.lives = 3; } updateHeartsUI();
             } else {
-                document.getElementById('livesContainer').classList.add('hidden');
-                document.getElementById('livesContainer').classList.remove('flex');
+                document.getElementById('livesContainer').classList.add('hidden'); document.getElementById('livesContainer').classList.remove('flex');
             }
 
             currentLevelIndex = startIdx; loadLevel(currentLevelIndex);
+            
+            if (currentMode === 'MAIN' && currentLevelIndex > savedData.maxMainLvl && !isCheatModeActive) { savedData.maxMainLvl = currentLevelIndex; saveProgress(); }
+            if (currentMode === 'TRAINING' && currentLevelIndex > savedData.maxTrainLvl && !isCheatModeActive) { savedData.maxTrainLvl = currentLevelIndex; saveProgress(); }
+
             state = 'PLAYING'; lastTime = performance.now(); globalTime = 0;
             if(animationId) cancelAnimationFrame(animationId); animationId = requestAnimationFrame(gameLoop);
         };
@@ -460,19 +591,17 @@
             let levelData = (currentMode === 'MAIN') ? mainLevels[index] : trainingLevels[index];
             currentLevel = JSON.parse(JSON.stringify(levelData));
             player.x = currentLevel.spawn.x; player.y = currentLevel.spawn.y; player.vx = 0; player.vy = 0; player.grounded = false; player.facingRight = true;
-            player.hasMoved = false; player.moveStartTime = 0; playerHistory = [];
+            player.hasMoved = false; player.moveStartTime = 0; playerHistory = []; player.invulnTimer = 0;
             timeRemaining = currentLevel.time; globalTime = 0; camera.x = 0; camera.y = 0;
             initParticles(currentLevel.theme, currentLevel.width); updateHUD(); startGameMusic(currentLevel.theme);
         }
 
         function takeDamage(reason) {
+            if (player.invulnTimer > 0) return;
             if (currentMode === 'TRAINING') {
-                player.lives--;
-                updateHeartsUI();
-                gameOver(reason);
-            } else {
-                gameOver(reason);
-            }
+                player.lives--; updateHeartsUI();
+                if (player.lives <= 0) { gameOver(reason); } else { player.invulnTimer = 1.5; playSound('hurt'); }
+            } else { gameOver(reason); }
         }
 
         function showTutorial() {
@@ -490,56 +619,55 @@
             }, 1000);
         }
 
-        function showNormalGameOver() {
-            state = 'GAMEOVER'; playSound('death'); gameOverUI.classList.remove('hidden');
-        }
+        function showNormalGameOver() { state = 'GAMEOVER'; document.getElementById('deathReason').innerText = currentDeathReason; playSound('death'); gameOverUI.classList.remove('hidden'); }
 
         function gameOver(reason) { 
             if (currentMode === 'TRAINING') {
-                if (player.lives > 0) {
-                    currentDeathReason = reason + ` (تبقت لك ${player.lives} أرواح)`;
-                    document.getElementById('retryBtn').innerText = "إعادة المحاولة (Space / Enter)";
-                } else {
-                    currentDeathReason = reason + " (نفدت أرواحك! العودة للبداية)";
-                    document.getElementById('retryBtn').innerText = "العودة للبداية (Space / Enter)";
-                }
-            } else {
-                currentDeathReason = reason;
-                document.getElementById('retryBtn').innerText = "إعادة البدء (Space / Enter)";
-            }
-            document.getElementById('deathReason').innerText = currentDeathReason;
+                if (player.lives > 0) { currentDeathReason = reason + ` (تبقت لك ${player.lives} أرواح)`; document.getElementById('retryBtn').innerText = "إعادة المحاولة (Space / Enter)"; } 
+                else { currentDeathReason = reason + " (نفدت أرواحك! العودة للبداية)"; document.getElementById('retryBtn').innerText = "العودة للبداية (Space / Enter)"; }
+            } else { currentDeathReason = reason; document.getElementById('retryBtn').innerText = "إعادة البدء (Space / Enter)"; }
             
-            if (currentMode === 'MAIN' && currentLevelIndex === 4 && !savedData.hasSeenLevel5Tutorial) {
-                showTutorial();
-            } else {
-                showNormalGameOver();
-            }
+            document.getElementById('deathReason').innerText = currentDeathReason;
+            if (currentMode === 'MAIN' && currentLevelIndex === 4 && !savedData.hasSeenLevel5Tutorial) { showTutorial(); } 
+            else { showNormalGameOver(); }
         }
 
         window.returnToMenuFromDeath = function() { gameOverUI.classList.add('hidden'); returnToMenu(); };
         window.restartFromDeath = function() {
             initAudio(); gameOverUI.classList.add('hidden');
             if (currentMode === 'TRAINING') {
-                if (player.lives > 0) { startGame('TRAINING', currentLevelIndex, true); } 
-                else { startGame('TRAINING', 0, false); }
-            } else if (isCheatModeActive || currentLevelIndex === 5) { 
-                startGame('MAIN', currentLevelIndex); 
-            } else { 
-                startGame('MAIN', 0); 
-            }
+                if (player.lives > 0) { startGame('TRAINING', currentLevelIndex, true); } else { startGame('TRAINING', 0, false); }
+            } else if (isCheatModeActive || currentLevelIndex === 5) { startGame('MAIN', currentLevelIndex); } 
+            else { startGame('MAIN', 0); }
         };
 
         function winGame() {
             state = 'WIN'; stopAllMusic(); playSound('win'); hudUI.classList.add('hidden'); winUI.classList.remove('hidden'); document.getElementById('finalCoins').innerText = totalCoins;
+            let btnNorm = document.getElementById('winButtonsNormal'); let btnLvl6 = document.getElementById('winButtonsLevel6');
+
             if (currentMode === 'TRAINING') {
                 document.getElementById('winTitle').innerText = "تدريب مكتمل!"; document.getElementById('winDesc').innerText = "أنت جاهز للعبة الأساسية!";
                 document.getElementById('rewardSection').classList.add('hidden');
+                btnNorm.classList.remove('hidden'); btnLvl6.classList.add('hidden'); btnLvl6.classList.remove('flex');
             } else {
                 document.getElementById('rewardSection').classList.remove('hidden');
                 if (totalCoins >= 9) savedData.hasOutfit = true;
-                if (currentLevelIndex === 4) { savedData.unlockedLevel6 = true; document.getElementById('winTitle').innerText = "نجاح مبهر!"; document.getElementById('winDesc').innerText = "فتحت المرحلة المستحيلة!"; } 
-                else if (currentLevelIndex === 5) { document.getElementById('winTitle').innerText = "أسطورة حية!"; document.getElementById('winDesc').innerText = "لقد هزمت اللعبة بالكامل!"; }
+                
+                if (currentLevelIndex === 4) { 
+                    savedData.unlockedLevel6 = true; 
+                    document.getElementById('winTitle').innerText = "نجاح مبهر!"; document.getElementById('winDesc').innerText = "فتحت المرحلة المستحيلة!"; 
+                    btnNorm.classList.remove('hidden'); btnLvl6.classList.add('hidden'); btnLvl6.classList.remove('flex');
+                } else if (currentLevelIndex === 5) { 
+                    document.getElementById('winTitle').innerText = "مبروك لقد انهيت اللعبه"; document.getElementById('winDesc').innerText = "لا يوجد فخاخ هنا بعد الآن!"; 
+                    btnNorm.classList.add('hidden'); btnLvl6.classList.remove('hidden'); btnLvl6.classList.add('flex');
+                } else {
+                    document.getElementById('winTitle').innerText = "نهاية اللعبة!"; document.getElementById('winDesc').innerText = "مهارة استثنائية!";
+                    btnNorm.classList.remove('hidden'); btnLvl6.classList.add('hidden'); btnLvl6.classList.remove('flex');
+                }
+                
+                if (!isCheatModeActive) { savedData.maxMainLvl = currentLevelIndex + 1; }
                 saveProgress();
+
                 if (savedData.hasOutfit) { document.getElementById('noReward').classList.add('hidden'); document.getElementById('hasReward').classList.remove('hidden'); document.getElementById('hasReward').classList.add('flex'); } 
                 else { document.getElementById('noReward').classList.remove('hidden'); document.getElementById('hasReward').classList.add('hidden'); document.getElementById('hasReward').classList.remove('flex'); }
             }
@@ -567,15 +695,14 @@
 
         function update(dt) {
             timeRemaining -= dt; globalTime += dt; updateHUD();
-            
+            if (player.invulnTimer > 0) player.invulnTimer -= dt;
             if (timeRemaining <= 0) { takeDamage("انتهى الوقت!"); return; }
 
             if (!player.hasMoved && (keys.left || keys.right || keys.up)) { player.hasMoved = true; player.moveStartTime = globalTime; }
 
             if (keys.left) player.vx = -player.speed; else if (keys.right) player.vx = player.speed; else player.vx = 0;
             
-            let wasGrounded = player.grounded;
-            let oldX = player.x; let oldY = player.y;
+            let wasGrounded = player.grounded; let oldX = player.x; let oldY = player.y;
 
             player.x += player.vx * dt;
             if (player.x < 0) player.x = 0; if (player.x + player.width > currentLevel.width) player.x = currentLevel.width - player.width;
@@ -605,8 +732,7 @@
             if (player.y > logicalHeight) { takeDamage("سقطت في الهاوية!"); return; }
 
             camera.x = player.x - (logicalWidth / 2) + (player.width / 2);
-            if (camera.x < 0) camera.x = 0;
-            if (camera.x > currentLevel.width - logicalWidth) camera.x = currentLevel.width - logicalWidth;
+            if (camera.x < 0) camera.x = 0; if (camera.x > currentLevel.width - logicalWidth) camera.x = currentLevel.width - logicalWidth;
 
             if (state === 'PLAYING' && player.hasMoved) { playerHistory.push({x: player.x, y: player.y, time: globalTime - player.moveStartTime}); }
 
@@ -700,6 +826,10 @@
             }
             if (checkCollision(player, currentLevel.exit)) {
                 let maxLvl = (currentMode === 'TRAINING') ? trainingLevels.length : mainLevels.length;
+                
+                if (currentMode === 'MAIN' && currentLevelIndex + 1 > savedData.maxMainLvl && !isCheatModeActive) { savedData.maxMainLvl = currentLevelIndex + 1; saveProgress(); }
+                if (currentMode === 'TRAINING' && currentLevelIndex + 1 > savedData.maxTrainLvl && !isCheatModeActive) { savedData.maxTrainLvl = currentLevelIndex + 1; saveProgress(); }
+
                 if (currentLevelIndex >= maxLvl - 1) winGame(); else { currentLevelIndex++; loadLevel(currentLevelIndex); }
             }
 
@@ -896,20 +1026,23 @@
             ctx.fillStyle = (currentLevel.theme === 'circuit') ? '#10b981' : '#fbbf24'; ctx.beginPath(); ctx.roundRect(exit.x, exit.y, exit.w, exit.h, [20, 20, 0, 0]); ctx.fill();
             ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(exit.x + 10, exit.y + 10, exit.w - 20, exit.h - 10, [10, 10, 0, 0]); ctx.fill();
 
-            ctx.fillStyle = savedData.hasOutfit ? '#22c55e' : player.color;
-            if(savedData.hasOutfit) { ctx.shadowBlur = 15; ctx.shadowColor = '#4ade80'; }
-            ctx.beginPath(); ctx.roundRect(player.x, player.y, player.width, player.height, 8); ctx.fill(); ctx.shadowBlur = 0;
-            
-            let eye1X = player.facingRight ? 16 : 4; let eye2X = player.facingRight ? 24 : 12;
-            let pupil1X = player.facingRight ? 18 : 4; let pupil2X = player.facingRight ? 26 : 12;
+            if (player.invulnTimer <= 0 || Math.floor(globalTime * 15) % 2 === 0) {
+                ctx.fillStyle = savedData.hasOutfit ? '#22c55e' : player.color;
+                if(savedData.hasOutfit) { ctx.shadowBlur = 15; ctx.shadowColor = '#4ade80'; }
+                ctx.beginPath(); ctx.roundRect(player.x, player.y, player.width, player.height, 8); ctx.fill(); ctx.shadowBlur = 0;
+                
+                let eye1X = player.facingRight ? 16 : 4; let eye2X = player.facingRight ? 24 : 12;
+                let pupil1X = player.facingRight ? 18 : 4; let pupil2X = player.facingRight ? 26 : 12;
 
-            ctx.fillStyle = 'white'; ctx.fillRect(player.x + eye1X, player.y + 6, 6, 6); ctx.fillRect(player.x + eye2X, player.y + 6, 6, 6);
-            ctx.fillStyle = 'black'; ctx.fillRect(player.x + pupil1X, player.y + 8, 3, 3); ctx.fillRect(player.x + pupil2X, player.y + 8, 3, 3);
+                ctx.fillStyle = 'white'; ctx.fillRect(player.x + eye1X, player.y + 6, 6, 6); ctx.fillRect(player.x + eye2X, player.y + 6, 6, 6);
+                ctx.fillStyle = 'black'; ctx.fillRect(player.x + pupil1X, player.y + 8, 3, 3); ctx.fillRect(player.x + pupil2X, player.y + 8, 3, 3);
 
-            if (savedData.hasOutfit) {
-                ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.moveTo(player.x-2, player.y + 5); ctx.lineTo(player.x + 4, player.y - 12);
-                ctx.lineTo(player.x + player.width/2, player.y - 2); ctx.lineTo(player.x + player.width - 4, player.y - 12); ctx.lineTo(player.x + player.width+2, player.y + 5); ctx.fill();
+                if (savedData.hasOutfit) {
+                    ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.moveTo(player.x-2, player.y + 5); ctx.lineTo(player.x + 4, player.y - 12);
+                    ctx.lineTo(player.x + player.width/2, player.y - 2); ctx.lineTo(player.x + player.width - 4, player.y - 12); ctx.lineTo(player.x + player.width+2, player.y + 5); ctx.fill();
+                }
             }
+            
             ctx.restore(); ctx.restore(); 
         }
 
@@ -924,7 +1057,7 @@
             update(dt); draw(); animationId = requestAnimationFrame(gameLoop);
         }
 
-        loadGame(); initMenuParticles(); draw(); animationId = requestAnimationFrame(gameLoop);
+        loadSettings(); initMenuParticles(); draw(); animationId = requestAnimationFrame(gameLoop);
     </script>
 </body>
 </html>
