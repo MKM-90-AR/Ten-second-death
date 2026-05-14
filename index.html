@@ -7,24 +7,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #020617; touch-action: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh; }
+        
         #game-container {
             width: 100vw; height: 100vh; max-width: calc(100vh * 16 / 9); max-height: calc(100vw * 9 / 16);
             aspect-ratio: 16 / 9; position: relative; background-color: black; box-shadow: 0 0 50px rgba(0,0,0,1); overflow: hidden;
         }
+        
         canvas { display: block; width: 100%; height: 100%; }
         .hidden { display: none !important; }
         .glowing-text { text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(239, 68, 68, 0.5); }
         .danger-text { text-shadow: 0 0 15px rgba(239, 68, 68, 1); }
-        .menu-btn { width: 320px; }
+        
+        /* توحيد أحجام الأزرار في القائمة الرئيسية */
+        .menu-btn { width: 320px !important; text-align: center; }
         
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
         .animate-float { animation: float 4s ease-in-out infinite; }
         @keyframes pulse-glow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
         .animate-pulse-glow { animation: pulse-glow 2s infinite; }
+        
         .heart { display: inline-block; width: 24px; height: 24px; background-color: #ef4444; clip-path: polygon(50% 100%, 0 50%, 0 15%, 50% 0, 100% 15%, 100% 50%); transform: rotate(180deg); margin: 0 2px; transition: all 0.3s ease; }
         .heart-lost { background-color: #334155; }
 
-        /* ستايل مخصص لأشرطة التمرير الخاصة بالصوت */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -8px; box-shadow: 0 0 10px rgba(59, 130, 246, 0.8); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: #475569; border-radius: 5px; border: 1px solid #1e293b; }
@@ -33,9 +37,21 @@
 </head>
 <body class="text-white select-none">
 
+    <!-- شاشة الحظر للهواتف والأجهزة اللوحية -->
+    <div id="deviceBlockUI" class="absolute inset-0 bg-slate-950 z-[100] flex flex-col items-center justify-center p-8 text-center hidden">
+        <div class="text-8xl mb-6">💻</div>
+        <h1 class="text-4xl md:text-5xl text-red-500 font-black mb-6 glowing-text">عذراً! اللعبة غير مدعومة</h1>
+        <p class="text-xl md:text-2xl text-gray-300 max-w-2xl leading-relaxed">
+            هذه اللعبة مخصصة <strong>حصراً</strong> للعب على أجهزة الكمبيوتر واللابتوب باستخدام لوحة المفاتيح.
+            <br><br>
+            <span class="text-red-400">اللعبة غير مخصصة للأجهزة اللوحية أو الهواتف الذكية.</span>
+        </p>
+    </div>
+
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
 
+        <!-- واجهة العدادات داخل اللعبة -->
         <div id="hudUI" class="absolute top-0 left-0 w-full p-4 flex justify-between items-start pointer-events-none hidden z-10">
             <div class="flex flex-col gap-2">
                 <div class="bg-black/80 backdrop-blur-md p-3 rounded-xl border border-white/20 shadow-lg transition-colors duration-300" id="timeContainer">
@@ -59,21 +75,22 @@
             </div>
         </div>
 
+        <!-- القائمة الرئيسية -->
         <div id="menuUI" class="absolute inset-0 bg-transparent flex flex-col items-center justify-center p-6 text-center z-20 overflow-y-auto">
             <h1 class="text-6xl md:text-8xl font-black text-white mb-8 glowing-text tracking-wider animate-float" dir="ltr">
                 <span class="text-red-600">Ten-second</span> death
             </h1>
             
-            <div class="flex flex-col gap-4 items-center z-10">
-                <button onclick="startGame('MAIN', 0)" class="menu-btn px-8 py-4 bg-gradient-to-r from-red-700 to-orange-600 hover:from-red-600 hover:to-orange-500 text-white text-2xl font-bold rounded-2xl shadow-[0_0_25px_rgba(239,68,68,0.6)] transition transform hover:scale-110 active:scale-95 border-2 border-red-400/50 animate-pulse-glow">
+            <div class="flex flex-col gap-4 items-center z-10 w-full">
+                <button onclick="startGame('MAIN', 0)" class="menu-btn px-8 py-4 bg-gradient-to-r from-red-700 to-orange-600 hover:from-red-600 hover:to-orange-500 text-white text-2xl font-bold rounded-2xl shadow-[0_0_25px_rgba(239,68,68,0.6)] transition transform hover:scale-105 active:scale-95 border-2 border-red-400/50 animate-pulse-glow">
                     البدء (الأساسية)
                 </button>
 
-                <button onclick="startGame('TRAINING', 0)" class="menu-btn px-8 py-4 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-600 hover:to-emerald-500 text-white text-xl font-bold rounded-2xl shadow-[0_0_15px_rgba(34,197,94,0.5)] transition transform hover:scale-105 active:scale-95 border-2 border-green-500">
+                <button onclick="startGame('TRAINING', 0)" class="menu-btn px-8 py-3 bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-600 hover:to-emerald-500 text-white text-xl font-bold rounded-2xl shadow-[0_0_15px_rgba(34,197,94,0.5)] transition transform hover:scale-105 active:scale-95 border-2 border-green-500">
                     قسم التدريب (3 أرواح)
                 </button>
                 
-                <button id="btnLevel6" onclick="startGame('MAIN', 5)" class="menu-btn hidden px-8 py-4 bg-gradient-to-r from-purple-800 to-fuchsia-900 hover:from-purple-700 hover:to-fuchsia-800 text-white text-xl font-bold rounded-2xl shadow-[0_0_15px_rgba(168,85,247,0.5)] transition transform hover:scale-105 active:scale-95 border-2 border-purple-500 danger-text">
+                <button id="btnLevel6" onclick="startGame('MAIN', 5)" class="menu-btn hidden px-8 py-3 bg-gradient-to-r from-purple-800 to-fuchsia-900 hover:from-purple-700 hover:to-fuchsia-800 text-white text-xl font-bold rounded-2xl shadow-[0_0_15px_rgba(168,85,247,0.5)] transition transform hover:scale-105 active:scale-95 border-2 border-purple-500 danger-text">
                     المرحلة المستحيلة (6)
                 </button>
 
@@ -91,6 +108,7 @@
             </div>
         </div>
 
+        <!-- قائمة الإيقاف المؤقت -->
         <div id="pauseUI" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-6 text-center z-40 hidden backdrop-blur-md">
             <h2 class="text-6xl font-black text-white mb-8 glowing-text">إيقاف مؤقت</h2>
             <div class="flex flex-col gap-4 w-64">
@@ -103,10 +121,12 @@
             </div>
         </div>
 
+        <!-- شاشة الإعدادات والنظام السري -->
         <div id="settingsUI" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-start p-6 text-center z-30 hidden backdrop-blur-md overflow-y-auto pt-10">
             <h2 class="text-5xl text-gray-200 font-black mb-6 glowing-text">الإعدادات</h2>
             
             <div class="bg-black/70 p-6 rounded-3xl max-w-2xl w-full border border-gray-600/50 mb-6 shadow-2xl text-right text-white text-lg">
+                <!-- إعدادات الصوت -->
                 <div class="mb-6 border-b border-gray-700 pb-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-2xl text-yellow-400 font-bold">إعدادات الصوت:</h3>
@@ -132,13 +152,14 @@
                     </div>
                 </div>
 
+                <!-- النظام السري للمطورين -->
                 <div class="pt-2 bg-gray-900/80 p-4 rounded-xl border border-red-900/50 shadow-inner">
                     <h4 class="text-red-400 font-bold mb-2">محطة الإدارة الزمنية (للمطورين فقط)</h4>
                     <p class="text-xs text-gray-400 mb-3">أدخل شفرة التجاوز لتفعيل اختصارات المراحل وفتح الأزياء.</p>
                     
                     <div class="flex gap-2 justify-end items-center">
                         <span id="cheatLockMsg" class="text-red-500 font-bold text-lg hidden"></span>
-                        <input type="text" id="cheatInput" onkeydown="if(event.key === 'Enter') verifyCheat()" class="bg-black border border-gray-600 text-green-400 px-3 py-2 rounded outline-none focus:border-green-500 text-left w-48" dir="ltr" placeholder="********" autocomplete="off">
+                        <input type="text" id="cheatInput" class="bg-black border border-gray-600 text-green-400 px-3 py-2 rounded outline-none focus:border-green-500 text-left w-48" dir="ltr" placeholder="********" autocomplete="off">
                         <button id="cheatBtn" onclick="verifyCheat()" class="bg-red-700 hover:bg-red-600 px-6 py-2 rounded text-white font-bold transition shadow-lg">إدخال</button>
                     </div>
                     
@@ -158,6 +179,7 @@
             <button onclick="hideSettings()" class="px-10 py-3 bg-white text-slate-900 hover:bg-gray-200 text-2xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95 mb-6">عودة للقائمة</button>
         </div>
 
+        <!-- شاشة شرح اللعبة التفاعلية -->
         <div id="instructionsUI" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-start p-6 text-center z-30 hidden backdrop-blur-md overflow-y-auto pt-10">
             <h2 class="text-5xl text-blue-400 font-black mb-6 glowing-text">شرح اللعبة والمراحل</h2>
             <div class="bg-black/70 p-6 rounded-3xl max-w-3xl w-full border border-blue-500/50 mb-6 shadow-2xl text-right text-white text-lg">
@@ -165,13 +187,12 @@
                     <p class="leading-relaxed text-gray-300">القصة: لقد تم احتجازك في بُعد زمني ينهار. الفضاء والزمن يتدمران بعد <strong class="text-red-400">10 ثوانٍ</strong>. النجاة تعني الوصول إلى "بوابة الزمكان".</p>
                     <p class="text-gray-300 mt-2">التحكم: <strong class="text-white">الأسهم</strong> أو <strong class="text-white">W, A, S, D</strong> للحركة، <strong class="text-white">Space</strong> للقفز، و <strong class="text-white">Esc</strong> للإيقاف المؤقت.</p>
                 </div>
-                
                 <div id="dynamicLevelLore"></div>
-                
             </div>
             <button onclick="hideInstructions()" class="px-10 py-3 bg-white text-blue-900 hover:bg-gray-200 text-2xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95 mb-6">عودة للقائمة</button>
         </div>
 
+        <!-- شاشة فريق العمل -->
         <div id="creditsUI" class="absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center p-6 text-center z-30 hidden backdrop-blur-md overflow-y-auto">
             <h2 class="text-5xl text-purple-400 font-black mb-8 glowing-text">فريق العمل</h2>
             <div class="bg-black/70 p-8 rounded-3xl max-w-md w-full border border-purple-500/50 mb-8 shadow-2xl text-white">
@@ -190,6 +211,7 @@
             <button onclick="hideCredits()" class="px-10 py-3 bg-white text-purple-900 hover:bg-gray-200 text-2xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95">عودة للقائمة</button>
         </div>
 
+        <!-- شاشة دروس الفيروسات -->
         <div id="virusTutorialUI" class="absolute inset-0 bg-black/95 flex flex-col items-center justify-center p-8 text-center z-50 hidden backdrop-blur-md">
             <h2 class="text-5xl font-black text-red-500 mb-6 glowing-text">تحذير أمني عالي!</h2>
             <div class="bg-gray-900/80 p-6 rounded-3xl border-2 border-red-500 max-w-2xl text-right shadow-[0_0_30px_rgba(239,68,68,0.5)]">
@@ -218,6 +240,7 @@
             </button>
         </div>
 
+        <!-- شاشة الموت -->
         <div id="gameOverUI" class="absolute inset-0 bg-red-950/90 flex flex-col items-center justify-center p-8 text-center z-20 hidden backdrop-blur-md">
             <h1 class="text-7xl font-black text-red-500 mb-2 glowing-text" dir="ltr">YOU DIED</h1>
             <p id="deathReason" class="text-3xl text-white mb-8 font-bold"></p>
@@ -231,6 +254,7 @@
             </div>
         </div>
 
+        <!-- شاشة الفوز -->
         <div id="winUI" class="absolute inset-0 bg-green-950/95 flex flex-col items-center justify-center p-8 text-center z-20 hidden backdrop-blur-md overflow-y-auto">
             <h1 class="text-6xl font-black text-white mb-4 glowing-text" id="winTitle">نهاية اللعبة!</h1>
             <p class="text-2xl text-green-300 mb-6" id="winDesc">مهارة استثنائية!</p>
@@ -247,28 +271,41 @@
                 </div>
             </div>
 
+            <!-- أزرار النهاية العادية -->
             <button id="winButtonsNormal" onclick="returnToMenu()" class="px-10 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-2xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95 border-2 border-white/20">العودة للقائمة</button>
             
+            <!-- أزرار المرحلة السادسة (Easter Egg) -->
             <div id="winButtonsLevel6" class="hidden flex-row gap-4 mt-4">
                 <button onclick="restartFromDeath()" class="px-8 py-4 bg-white text-green-900 hover:bg-gray-200 text-xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95">إعادة البدء</button>
                 <button onclick="showCreditsFromWin()" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xl font-bold rounded-full shadow-lg transition transform hover:scale-105 active:scale-95 border-2 border-white/20">نقل إلى فريق العمل</button>
             </div>
         </div>
 
-        <div id="mobileControls" class="absolute bottom-6 left-0 w-full px-6 flex justify-between items-end z-10 hidden sm:hidden pointer-events-none">
-            <div class="flex gap-4 pointer-events-auto">
-                <button id="btnLeft" class="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-full flex justify-center items-center text-4xl font-bold active:bg-white/30 text-white border-2 border-white/30 shadow-lg">&larr;</button>
-                <button id="btnRight" class="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-full flex justify-center items-center text-4xl font-bold active:bg-white/30 text-white border-2 border-white/30 shadow-lg">&rarr;</button>
-            </div>
-            <button id="btnJump" class="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full flex justify-center items-center text-2xl font-bold active:bg-white/30 text-white border-2 border-white/30 shadow-lg pointer-events-auto">قفز</button>
-        </div>
-
     </div>
 
     <script>
+        // === نظام فحص الأجهزة (منع الهواتف والتابلت) ===
+        function checkDevice() {
+            const isTouch = ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const blockScreen = document.getElementById('deviceBlockUI');
+            const gameContainer = document.getElementById('game-container');
+            
+            if (isTouch || isMobileUA) {
+                blockScreen.classList.remove('hidden');
+                blockScreen.classList.add('flex');
+                gameContainer.style.display = 'none';
+            } else {
+                blockScreen.classList.add('hidden');
+                blockScreen.classList.remove('flex');
+                gameContainer.style.display = 'block';
+            }
+        }
+        window.addEventListener('resize', checkDevice);
+        window.addEventListener('load', checkDevice);
+
         // === نظام الصوت والموسيقى المتقدم ===
         let audioCtx; let menuAudioInterval; let gameAudioInterval; let isMusicPlaying = false;
-        
         let audioVols = { Music: 1.0, Move: 1.0, Trap: 1.0 }; 
         let oldVols = { Music: 1.0, Move: 1.0, Trap: 1.0 };   
 
@@ -278,6 +315,7 @@
             if (state === 'MENU') startMenuMusic();
         }
 
+        // تشغيل الموسيقى تلقائياً إذا أمكن
         window.addEventListener('load', () => { loadSettings(); initAudio(); });
         document.body.addEventListener('click', () => { if (!audioCtx || audioCtx.state === 'suspended') initAudio(); }, { once: true });
         document.body.addEventListener('keydown', () => { if (!audioCtx || audioCtx.state === 'suspended') initAudio(); }, { once: true });
@@ -356,7 +394,7 @@
             { name: "فراغ الفضاء", desc: "اقفز بحذر بين المنصات وتفادى أشعة الليزر التي تنشط بشكل دوري." },
             { name: "الخندق المائي", desc: "تجاوز الألغام البحرية الشائكة التي تطفو وتدور ببطء." },
             { name: "السجن الحديدي", desc: "تسلق للهروب من هذا السجن وتجنب المناشير الدوارة الحادة." },
-            { name: "الدائرة الإلكترونية", desc: "متاهة معقدة تتبعك فيها فيروسات ظلية (الأخضر يتبع مسارك، الأحمر يخترق الجدران)." },
+            { name: "الدائرة الإلكترونية", desc: "متاهة معقدة تتبعك فيها فيروسات ظلية." },
             { name: "المرج المستحيل", desc: "كل شيء يبدو هادئاً حتى تقترب! فخاخ فجائية تنتظر خطوتك لتنقض عليك." }
         ];
 
@@ -368,11 +406,18 @@
         ];
 
         function loadGame() { 
-            try { const data = localStorage.getItem('10sec_final_mega_v9'); if (data) savedData = { ...savedData, ...JSON.parse(data) }; if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {} 
+            try { const data = localStorage.getItem('10sec_final_mega_v10'); if (data) savedData = { ...savedData, ...JSON.parse(data) }; } catch(e) {} 
         }
 
         function saveProgress() { 
-            try { localStorage.setItem('10sec_final_mega_v9', JSON.stringify(savedData)); if (savedData.unlockedLevel6) document.getElementById('btnLevel6').classList.remove('hidden'); } catch(e) {} 
+            try { localStorage.setItem('10sec_final_mega_v10', JSON.stringify(savedData)); updateMenuButtons(); } catch(e) {} 
+        }
+
+        function updateMenuButtons() {
+            if (savedData.unlockedLevel6) {
+                document.getElementById('btnLevel6').classList.remove('hidden');
+                document.getElementById('btnLevel6').classList.add('block');
+            }
         }
 
         // === واجهة المستخدم والإعدادات ===
@@ -382,7 +427,6 @@
         const pauseUI = document.getElementById('pauseUI'); const settingsUI = document.getElementById('settingsUI');
 
         function loadSettings() {
-            loadGame();
             audioVols.Music = savedData.volMusic !== undefined ? savedData.volMusic : 1.0;
             audioVols.Move = savedData.volMove !== undefined ? savedData.volMove : 1.0;
             audioVols.Trap = savedData.volTrap !== undefined ? savedData.volTrap : 1.0;
@@ -390,6 +434,7 @@
             document.getElementById('volMoveSlider').value = audioVols.Move;
             document.getElementById('volTrapSlider').value = audioVols.Trap;
             updateMuteBtn('Music'); updateMuteBtn('Move'); updateMuteBtn('Trap'); updateMuteAllBtn();
+            updateMenuButtons();
         }
 
         window.updateVolume = function(type, val) {
@@ -438,7 +483,17 @@
         window.hideInstructions = function() { instructionsUI.classList.add('hidden'); menuUI.classList.remove('hidden'); };
         
         window.showCredits = function() { menuUI.classList.add('hidden'); creditsUI.classList.remove('hidden'); };
-        window.hideCredits = function() { creditsUI.classList.add('hidden'); menuUI.classList.remove('hidden'); };
+        window.hideCredits = function() { 
+            creditsUI.classList.add('hidden'); 
+            menuUI.classList.remove('hidden'); 
+            if (state !== 'MENU') {
+                state = 'MENU';
+                updateMenuButtons();
+                startMenuMusic();
+                initMenuParticles();
+                draw();
+            }
+        };
         
         window.showCreditsFromWin = function() { winUI.classList.add('hidden'); creditsUI.classList.remove('hidden'); };
 
@@ -458,7 +513,12 @@
         }
 
         // === النظام السري ===
-        let isCheatModeActive = false; let cheatCountdown = 0;
+        let isCheatModeActive = false; let cheatLockTimer = null; let cheatCountdown = 0;
+        
+        document.getElementById('cheatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') verifyCheat();
+        });
+
         window.verifyCheat = function() {
             const input = document.getElementById('cheatInput'); const btn = document.getElementById('cheatBtn');
             const msg = document.getElementById('cheatLockMsg'); const panel = document.getElementById('cheatPanel');
@@ -468,11 +528,11 @@
                 panel.classList.remove('hidden'); input.classList.add('hidden'); btn.classList.add('hidden'); msg.classList.add('hidden');
             } else {
                 input.disabled = true; btn.disabled = true; msg.classList.remove('hidden'); input.value = '';
-                cheatCountdown = 3; msg.innerText = `قفل! انتظر ${cheatCountdown}...`;
+                cheatCountdown = 3; msg.innerText = `كلمة المرور خطأ! انتظر ${cheatCountdown}...`;
                 clearInterval(cheatLockTimer);
                 cheatLockTimer = setInterval(() => { 
                     cheatCountdown--;
-                    if(cheatCountdown > 0) { msg.innerText = `قفل! انتظر ${cheatCountdown}...`; }
+                    if(cheatCountdown > 0) { msg.innerText = `كلمة المرور خطأ! انتظر ${cheatCountdown}...`; }
                     else { clearInterval(cheatLockTimer); input.disabled = false; btn.disabled = false; msg.classList.add('hidden'); input.focus(); }
                 }, 1000);
             }
@@ -485,7 +545,6 @@
 
         function resize() {
             canvas.width = container.clientWidth; canvas.height = container.clientHeight;
-            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) { document.getElementById('mobileControls').classList.remove('hidden'); document.getElementById('mobileControls').classList.add('flex'); }
         }
         window.addEventListener('resize', resize); resize();
 
@@ -495,10 +554,14 @@
         let currentDeathReason = ""; let camera = { x: 0, y: 0 };
         
         let playerHistory = []; 
-        const player = { x: 0, y: 0, width: 30, height: 30, vx: 0, vy: 0, speed: 500, jumpPower: -900, grounded: false, color: '#FF7F50', facingRight: true, hasMoved: false, moveStartTime: 0, lives: 3, invulnTimer: 0 };
+        const player = { 
+            x: 0, y: 0, width: 30, height: 30, vx: 0, vy: 0, speed: 500, jumpPower: -900, 
+            grounded: false, color: '#FF7F50', facingRight: true, hasMoved: false, moveStartTime: 0,
+            lives: 3, invulnTimer: 0
+        };
         const gravity = 2400; const terminalVelocity = 1400; const keys = { left: false, right: false, up: false };
 
-        // === هندسة المراحل ===
+        // === هندسة المراحل الأساسية ===
         const mainLevels = [
             { theme: 'volcano', width: 1000, time: 10.0, spawn: { x: 50, y: 500 }, platforms: [ { x: 0, y: 550, w: 150, h: 50, type: 'ground' }, { x: 250, y: 450, w: 60, h: 20, type: 'yellow' }, { x: 500, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 750, y: 250, w: 60, h: 20, type: 'yellow' }, { x: 500, y: 150, w: 60, h: 20, type: 'yellow' }, { x: 250, y: 100, w: 60, h: 20, type: 'yellow' }, { x: 0, y: 150, w: 100, h: 50, type: 'ground' } ], traps: [{ type: 'fireball', x: 375, y: -50, vy: 400, resetY: 650 }, { type: 'fireball', x: 625, y: -200, vy: 450, resetY: 650 }], coins: [{ x: 515, y: 310, collected: false }, { x: 265, y: 60, collected: false }], exit: { x: 20, y: 70, w: 60, h: 80 } },
             { theme: 'space', width: 1000, time: 10.0, spawn: { x: 900, y: 400 }, platforms: [ { x: 850, y: 450, w: 150, h: 150, type: 'ground' }, { x: 650, y: 380, w: 50, h: 20, type: 'yellow' }, { x: 450, y: 300, w: 50, h: 20, type: 'yellow' }, { x: 250, y: 250, w: 50, h: 20, type: 'yellow' }, { x: 0, y: 200, w: 150, h: 150, type: 'ground' } ], traps: [ { type: 'laser', x: 550, y: 0, w: 15, h: 600, state: 0, timer: 0, times: [1000, 500, 1000, 300] }, { type: 'laser', x: 350, y: 0, w: 15, h: 600, state: 2, timer: 0, times: [1000, 500, 1000, 300] } ], coins: [{ x: 460, y: 260, collected: false }, { x: 260, y: 210, collected: false }], exit: { x: 40, y: 120, w: 60, h: 80 } },
@@ -508,6 +571,7 @@
             { theme: 'meadow', width: 1000, time: 10.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 500, w: 100, h: 100, type: 'ground' }, { x: 150, y: 420, w: 60, h: 20, type: 'yellow' }, { x: 300, y: 320, w: 60, h: 20, type: 'yellow' }, { x: 450, y: 220, w: 60, h: 20, type: 'yellow' }, { x: 580, y: 0, w: 20, h: 250, type: 'ground' }, { x: 600, y: 450, w: 60, h: 20, type: 'yellow' }, { x: 750, y: 350, w: 60, h: 20, type: 'yellow' }, { x: 900, y: 450, w: 100, h: 150, type: 'ground' } ], traps: [ { type: 'spear', x: 160, y: 650, w: 40, triggerDist: 80, active: false, vy: 0, minY: 350, finished: false }, { type: 'prox_spike_fall', x: 310, y: -50, w: 40, h: 60, triggerDist: 80, active: false, vy: 0 }, { type: 'prox_laser', x: 450, y: 0, w: 20, h: 600, triggerDist: 100, active: false, timer: 0 }, { type: 'prox_saw_jump', x: 610, y: 650, radius: 30, triggerDist: 150, active: false, vy: 0, angle: 0 }, { type: 'prox_bullet', x: 1000, y: 320, w: 30, h: 15, triggerDist: 350, active: false, vx: -900 } ], coins: [], exit: { x: 920, y: 370, w: 60, h: 80 } }
         ];
 
+        // === هندسة المراحل التدريبية ===
         const trainingLevels = [
             { theme: 'training_forest', width: 3000, time: 30.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 450, w: 300, h: 200, type: 'ground' }, { x: 400, y: 400, w: 100, h: 20, type: 'yellow' }, { x: 650, y: 350, w: 100, h: 20, type: 'yellow' }, { x: 900, y: 450, w: 400, h: 200, type: 'ground' }, { x: 1450, y: 350, w: 150, h: 20, type: 'yellow' }, { x: 1750, y: 250, w: 100, h: 20, type: 'yellow' }, { x: 2000, y: 450, w: 500, h: 200, type: 'ground' }, { x: 2650, y: 350, w: 80, h: 20, type: 'yellow' }, { x: 2900, y: 450, w: 100, h: 200, type: 'ground' } ], traps: [ { type: 'static_spike', x: 1000, y: 420, w: 200, h: 30 }, { type: 'falling_plat', x: 500, y: 350, w: 100, h: 20, active: false, timer: 0, renderX: 500, vy: 0 }, { type: 'falling_plat', x: 1600, y: 250, w: 100, h: 20, active: false, timer: 0, renderX: 1600, vy: 0 }, { type: 'saw', x: 2200, y: 420, radius: 20, vx: 150, minX: 2000, maxX: 2450, angle: 0 } ], coins: [], exit: { x: 2920, y: 370, w: 60, h: 80 } },
             { theme: 'training_ice', width: 1000, time: 10.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 500, w: 100, h: 100, type: 'ground' }, { x: 200, y: 450, w: 80, h: 20, type: 'yellow' }, { x: 450, y: 350, w: 80, h: 20, type: 'yellow' }, { x: 700, y: 450, w: 80, h: 20, type: 'yellow' }, { x: 900, y: 500, w: 100, h: 100, type: 'ground' } ], traps: [ { type: 'mine', x: 350, y: 400, base_y: 400, range: 40, speed: 2, angle: 0 }, { type: 'mine', x: 600, y: 400, base_y: 400, range: 40, speed: 2.5, angle: 0 } ], coins: [], exit: { x: 920, y: 420, w: 60, h: 80 } },
@@ -515,12 +579,17 @@
             { theme: 'training_factory', width: 1000, time: 10.0, spawn: { x: 50, y: 400 }, platforms: [ { x: 0, y: 450, w: 1000, h: 150, type: 'ground' } ], traps: [ { type: 'piston', x: 200, y: 0, w: 60, h: 450, timer: 0, speed: 2 }, { type: 'piston', x: 400, y: 0, w: 60, h: 450, timer: 1, speed: 2 }, { type: 'piston', x: 600, y: 0, w: 60, h: 450, timer: 2, speed: 2 }, { type: 'piston', x: 800, y: 0, w: 60, h: 450, timer: 3, speed: 2 } ], coins: [], exit: { x: 920, y: 370, w: 60, h: 80 } }
         ];
 
+        let currentLevel = null;
+
         function spawnDustParticles() {
-            for(let i=0; i<8; i++) { dustParticles.push({ x: player.x + player.width/2 + (Math.random()*16 - 8), y: player.y + player.height, vx: (Math.random() - 0.5) * 80, vy: Math.random() * -60 - 20, life: 0.5, maxLife: 0.5, s: Math.random() * 3 + 2 }); }
+            for(let i=0; i<8; i++) {
+                dustParticles.push({ x: player.x + player.width/2 + (Math.random()*16 - 8), y: player.y + player.height, vx: (Math.random() - 0.5) * 80, vy: Math.random() * -60 - 20, life: 0.5, maxLife: 0.5, s: Math.random() * 3 + 2 });
+            }
         }
 
         function initMenuParticles() {
-            particles = []; for(let i=0; i<40; i++) { particles.push({ x: Math.random() * logicalWidth, y: Math.random() * logicalHeight, s: Math.random() * 3 + 1, v: Math.random() * 20 + 10, offset: Math.random() * Math.PI * 2 }); }
+            particles = [];
+            for(let i=0; i<40; i++) { particles.push({ x: Math.random() * logicalWidth, y: Math.random() * logicalHeight, s: Math.random() * 3 + 1, v: Math.random() * 20 + 10, offset: Math.random() * Math.PI * 2 }); }
         }
 
         function initParticles(theme, lvlWidth) {
@@ -530,8 +599,14 @@
         }
 
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'Escape') { if (state === 'PLAYING') { state = 'PAUSED'; pauseUI.classList.remove('hidden'); } else if (state === 'PAUSED') { resumeGame(); } }
-            if (state === 'GAMEOVER') { if (e.code === 'Space' || e.code === 'Enter') { restartFromDeath(); return; } if (e.code === 'Escape' || e.code === 'Delete') { returnToMenuFromDeath(); return; } }
+            if (e.code === 'Escape') {
+                if (state === 'PLAYING') { state = 'PAUSED'; pauseUI.classList.remove('hidden'); } 
+                else if (state === 'PAUSED') { resumeGame(); }
+            }
+            if (state === 'GAMEOVER') {
+                if (e.code === 'Space' || e.code === 'Enter') { restartFromDeath(); return; }
+                if (e.code === 'Escape' || e.code === 'Delete') { returnToMenuFromDeath(); return; }
+            }
             let k = e.key.toLowerCase();
             if (e.code === 'ArrowLeft' || k === 'a') { keys.left = true; player.facingRight = false; }
             if (e.code === 'ArrowRight' || k === 'd') { keys.right = true; player.facingRight = true; }
@@ -544,17 +619,10 @@
             if (e.code === 'Space' || e.code === 'ArrowUp' || k === 'w') keys.up = false;
         });
 
-        function setupTouch(id, key) {
-            const btn = document.getElementById(id);
-            btn.addEventListener('touchstart', (e) => { e.preventDefault(); if(key==='up') jump(); else { keys[key] = true; player.facingRight = (key==='right'); } });
-            btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; });
-        }
-        setupTouch('btnLeft', 'left'); setupTouch('btnRight', 'right'); setupTouch('btnJump', 'up');
-
         function jump() { if (player.grounded && state === 'PLAYING') { player.vy = player.jumpPower; player.grounded = false; playSound('jump'); spawnDustParticles(); } }
 
         window.resumeGame = function() { state = 'PLAYING'; pauseUI.classList.add('hidden'); lastTime = performance.now(); requestAnimationFrame(gameLoop); }
-        window.quitToMenu = function() { state = 'MENU'; pauseUI.classList.add('hidden'); hudUI.classList.add('hidden'); menuUI.classList.remove('hidden'); stopAllMusic(); startMenuMusic(); initMenuParticles(); draw(); }
+        window.quitToMenu = function() { state = 'MENU'; pauseUI.classList.add('hidden'); hudUI.classList.add('hidden'); menuUI.classList.remove('hidden'); stopAllMusic(); startMenuMusic(); updateMenuButtons(); initMenuParticles(); draw(); }
 
         window.startGame = function(mode, startIdx, keepLives = false) {
             currentMode = mode;
@@ -651,21 +719,23 @@
                 btnNorm.classList.remove('hidden'); btnLvl6.classList.add('hidden'); btnLvl6.classList.remove('flex');
             } else {
                 document.getElementById('rewardSection').classList.remove('hidden');
-                if (totalCoins >= 9) savedData.hasOutfit = true;
+                
+                // إضافة الزي الأخضر فقط إذا جمع 9 عملات (من غير شفرة الغش)
+                if (totalCoins >= 9 && !isCheatModeActive) { savedData.hasOutfit = true; }
                 
                 if (currentLevelIndex === 4) { 
                     savedData.unlockedLevel6 = true; 
                     document.getElementById('winTitle').innerText = "نجاح مبهر!"; document.getElementById('winDesc').innerText = "فتحت المرحلة المستحيلة!"; 
                     btnNorm.classList.remove('hidden'); btnLvl6.classList.add('hidden'); btnLvl6.classList.remove('flex');
                 } else if (currentLevelIndex === 5) { 
-                    document.getElementById('winTitle').innerText = "مبروك لقد انهيت اللعبه"; document.getElementById('winDesc').innerText = "لا يوجد فخاخ هنا بعد الآن!"; 
+                    document.getElementById('winTitle').innerText = "مبروك لقد أنهيت اللعبة"; document.getElementById('winDesc').innerText = "لا يوجد فخاخ هنا بعد الآن!"; 
                     btnNorm.classList.add('hidden'); btnLvl6.classList.remove('hidden'); btnLvl6.classList.add('flex');
                 } else {
                     document.getElementById('winTitle').innerText = "نهاية اللعبة!"; document.getElementById('winDesc').innerText = "مهارة استثنائية!";
                     btnNorm.classList.remove('hidden'); btnLvl6.classList.add('hidden'); btnLvl6.classList.remove('flex');
                 }
                 
-                if (!isCheatModeActive) { savedData.maxMainLvl = currentLevelIndex + 1; }
+                if (!isCheatModeActive) { savedData.maxMainLvl = Math.max(savedData.maxMainLvl, currentLevelIndex + 1); }
                 saveProgress();
 
                 if (savedData.hasOutfit) { document.getElementById('noReward').classList.add('hidden'); document.getElementById('hasReward').classList.remove('hidden'); document.getElementById('hasReward').classList.add('flex'); } 
@@ -674,7 +744,7 @@
             isCheatModeActive = false; 
         }
 
-        window.returnToMenu = function() { initAudio(); loadGame(); winUI.classList.add('hidden'); menuUI.classList.remove('hidden'); state = 'MENU'; isCheatModeActive = false; stopAllMusic(); startMenuMusic(); initMenuParticles(); draw(); };
+        window.returnToMenu = function() { initAudio(); loadGame(); winUI.classList.add('hidden'); menuUI.classList.remove('hidden'); state = 'MENU'; isCheatModeActive = false; stopAllMusic(); startMenuMusic(); updateMenuButtons(); initMenuParticles(); draw(); };
 
         function updateHUD() {
             let t = Math.max(0, timeRemaining).toFixed(1); document.getElementById('timeDisplay').innerText = t; const tContainer = document.getElementById('timeContainer');
@@ -826,7 +896,6 @@
             }
             if (checkCollision(player, currentLevel.exit)) {
                 let maxLvl = (currentMode === 'TRAINING') ? trainingLevels.length : mainLevels.length;
-                
                 if (currentMode === 'MAIN' && currentLevelIndex + 1 > savedData.maxMainLvl && !isCheatModeActive) { savedData.maxMainLvl = currentLevelIndex + 1; saveProgress(); }
                 if (currentMode === 'TRAINING' && currentLevelIndex + 1 > savedData.maxTrainLvl && !isCheatModeActive) { savedData.maxTrainLvl = currentLevelIndex + 1; saveProgress(); }
 
@@ -1057,6 +1126,7 @@
             update(dt); draw(); animationId = requestAnimationFrame(gameLoop);
         }
 
+        // بدء التشغيل
         loadSettings(); initMenuParticles(); draw(); animationId = requestAnimationFrame(gameLoop);
     </script>
 </body>
